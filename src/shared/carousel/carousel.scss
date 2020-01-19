@@ -1,0 +1,60 @@
+@import '../../styles/helpers/variables.scss';
+@import '../../styles/helpers/mixins.scss';
+
+.Carousel{
+
+    &-item{
+        position: relative;
+
+        &-inner{
+            background-color: $color-dark6;
+            position: relative;
+
+            &:before{
+                content: "";
+                display: block;
+                padding-top: (100 / (16/10)) + 0%;
+
+            }
+
+            img{
+                width: 100%;
+                height: 100%;
+                object-fit: cover;
+                display: block;
+                position: absolute;
+                left: 0;
+                top: 0;
+            }
+        }
+    }
+
+    .slick-dots{
+        bottom: 5px;
+
+        li{
+
+            button:before{
+                opacity: .5;
+                color: #fff
+            }
+            
+            &.slick-active{
+                button{
+                    &:before{
+                        transform: scale(1.3);
+                        opacity: 1;
+                    }
+                }
+            }
+        }
+    }
+
+    .slick-next{
+        right: 5px;
+    }
+
+    .slick-prev{
+        left: 5px;
+    }
+}

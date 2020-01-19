@@ -1,0 +1,24 @@
+
+
+// RESPONSIVE
+
+@mixin tablet(){
+    @media (min-width: 768px) { @content; }
+}
+@mixin desktop(){
+    @media (min-width: 992px) { @content; }
+}
+@mixin large-desktop(){
+    @media (min-width: 1200px) { @content; }
+}
+
+// UTILS
+
+@mixin full-absolute(){
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+}
+

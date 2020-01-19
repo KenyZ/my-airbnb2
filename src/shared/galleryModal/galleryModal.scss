@@ -1,0 +1,40 @@
+@import "../../styles/helpers/variables.scss";
+
+.ModalGallery{
+
+    &-gallery{
+        width: 65%;
+        max-width: 900px;
+        margin: 0 auto;
+        margin-top: 40px;
+
+        &-main{
+
+        }
+
+        &-preview{
+            margin-top: 10px;
+
+            // .slick-current{
+            //     .Carousel-item-inner{
+            //         border: 3px solid $color-dark0;
+            //     }
+            // }
+
+            .Carousel{
+                &-item{
+                    padding-right: 10px;
+
+                    // &-inner{
+                    //     border: 3px solid #fff;
+                    // }
+
+                }
+            }
+        }
+
+        &-count{
+            margin-top: 10px;
+        }
+    }
+}
