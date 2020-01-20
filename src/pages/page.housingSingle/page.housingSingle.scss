@@ -133,4 +133,63 @@
             }
         }
     }
+
+    &-body{
+        width: 100%;
+        padding: 0 20px;
+        padding-top: 25px;
+
+        &-row{
+            display: flex;
+            justify-content: flex-start;
+            align-items: flex-end;
+        }
+
+        &-location{
+            display: inline-block;
+            margin-right: auto;
+        }
+
+        &-title{
+
+        }
+
+        &-host{
+            display: inline-block;
+            margin-top: 10px;
+            &-avatar{
+                width: 35px;
+                height: 35px;
+                display: block;
+                margin: 0 auto;
+
+                img{
+                    width: 100%;
+                    height: 100%;
+                    border-radius: 100%;
+                    object-fit: cover;
+                }
+            }
+
+            &-name{
+                font-size: 12px;
+                width: 100%;
+                text-align: center;
+
+            }
+        }
+
+        &-info{
+            margin-top: 30px;
+
+            &-title{
+                font-weight: 600;
+                margin-bottom: 5px;
+            }
+
+            &-data{
+                font-size: 14px;
+            }
+        }
+    }
 }

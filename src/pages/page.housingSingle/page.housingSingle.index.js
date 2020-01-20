@@ -20,16 +20,23 @@ import AppConstants from '../../utils/AppConstants';
 import GalleryModal from '../../shared/galleryModal/galleryModal.index';
 
 
-// const housingTags = ["2 guest", "1 bath", "1 kitchen", "Wifi"]
-
 const data = {
     id: 0, 
-    title: "Champs élysées Golden", 
+    title: "Jolie petite Chambre près du Canal St Martin", 
     rating: {
         count: 124,
         value: 4.3
     },
-    images: Array(7).fill(true).map((_, i) => "https://picsum.photos/id/" + (i) +"/600/300")
+    images: Array(7).fill(true).map((_, i) => "https://picsum.photos/id/" + (i) +"/600/300"),
+    location: {
+        city: "Paris",
+        country: "France"
+    },
+    tags: ["2 guest", "1 bath", "1 kitchen", "Wifi"],
+    host: {
+        display_name: "John Doe",
+        avatar: "https://s3.amazonaws.com/uifaces/faces/twitter/tereshenkov/128.jpg"
+    }
 }
 
 const styles = theme => createStyles({
@@ -121,6 +128,33 @@ class PageHousingSingle extends React.Component{
                         />
                     )
                 }
+
+                <div className="page-housingSingle-body">
+                    <div className="page-housingSingle-body-row">
+                        <h1 className="page-housingSingle-body-title">{data.title}</h1>
+                    </div>
+
+                    <div className="page-housingSingle-body-row">
+                        <span className="page-housingSingle-body-location">{data.location.city}</span>
+                        <div className="page-housingSingle-body-host">
+                            <div className="page-housingSingle-body-host-avatar">
+                                <img src={data.host.avatar} alt=""/>
+                            </div>
+                            <span className="page-housingSingle-body-host-name">{data.host.display_name}</span>
+                        </div>  
+                    </div>
+
+                    <div className="page-housingSingle-body-info">
+                        <h4 className="page-housingSingle-body-info-title">Information about the housing</h4>
+                        <span className="page-housingSingle-body-info-data">{data.tags.join(" · ")}</span>
+                    </div>
+
+                    <div className="hr"/>
+
+                    <div className="page-housingSingle-body-description">
+                        <p>Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vel dolorum molestiae omnis accusantium tempore ea quisquam vitae nemo placeat velit ipsam veritatis, repellendus perspiciatis odit eum voluptas, iste rerum modi necessitatibus cumque explicabo sed nisi ad. Consectetur impedit nihil voluptate atque quis non quidem deleniti minima voluptates qui! Voluptatem velit porro illum tempora omnis.</p>
+                    </div>
+                </div>
                 
                 
             </div>
