@@ -1,7 +1,7 @@
 // Modules
 import React from 'react'
 import {
-    Dialog, Typography, IconButton
+    Dialog, Typography, IconButton, DialogContent
 } from '@material-ui/core'
 import PropTypes from 'prop-types'
 import Carousel from '../carousel/carousel.index'
@@ -86,46 +86,48 @@ class GalleryModal extends React.Component{
                 open={this.props.open}
                 className="ModalGallery"
             >
-                <IconButton onClick={this.props.onClose} classes={{root: classes.closeModalBtn}}>
-                    <CloseRounded/>
-                </IconButton>
-                <div className="ModalGallery-gallery">
+                <DialogContent>
+                    <IconButton onClick={this.props.onClose} classes={{root: classes.closeModalBtn}}>
+                        <CloseRounded/>
+                    </IconButton>
+                    <div className="ModalGallery-gallery">
 
-                    <div className="ModalGallery-gallery-main">
-                        <Carousel
-                            images={this.props.images}
-                            carouselRef={this.setRefAndState("mainCarousel")}
-                            SlickProps={{
-                                asNavFor: this.state.previewCarousel,
-                                dots: false,
-                                afterChange: this._afterChange,
-                                arrows: true,
-                                prevArrow: <CustomArrowPrev/>,
-                                nextArrow: <CustomArrowNext/>,
-                                initialSlide: this.props.startAt
-                            }}
-                        />
+                        <div className="ModalGallery-gallery-main">
+                            <Carousel
+                                images={this.props.images}
+                                carouselRef={this.setRefAndState("mainCarousel")}
+                                SlickProps={{
+                                    asNavFor: this.state.previewCarousel,
+                                    dots: false,
+                                    afterChange: this._afterChange,
+                                    arrows: true,
+                                    prevArrow: <CustomArrowPrev/>,
+                                    nextArrow: <CustomArrowNext/>,
+                                    initialSlide: this.props.startAt
+                                }}
+                            />
+                        </div>
+
+                        <div className="ModalGallery-gallery-preview">
+                            <Carousel
+                                images={this.props.images}
+                                carouselRef={this.setRefAndState("previewCarousel")}
+                                SlickProps={{
+                                    asNavFor: this.state.mainCarousel,
+                                    slidesToShow: 5,
+                                    dots: false,
+                                    focusOnSelect: true,
+                                    initialSlide: this.props.startAt
+                                }}
+                            />
+                        </div>
+
+                        <Typography className="ModalGallery-gallery-count" variant="h6" component="p">
+                            {`${this.state.currentIndex + 1} / ${this.props.images.length}`}
+                        </Typography>
+                        
                     </div>
-
-                    <div className="ModalGallery-gallery-preview">
-                        <Carousel
-                            images={this.props.images}
-                            carouselRef={this.setRefAndState("previewCarousel")}
-                            SlickProps={{
-                                asNavFor: this.state.mainCarousel,
-                                slidesToShow: 5,
-                                dots: false,
-                                focusOnSelect: true,
-                                initialSlide: this.props.startAt
-                            }}
-                        />
-                    </div>
-
-                    <Typography className="ModalGallery-gallery-count" variant="h6" component="p">
-                        {`${this.state.currentIndex + 1} / ${this.props.images.length}`}
-                    </Typography>
-                    
-                </div>
+                </DialogContent>
             </Dialog>
         )
     }

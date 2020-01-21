@@ -2,6 +2,18 @@
 @import '../../styles/helpers/variables.scss';
 
 .page-housingSingle{
+    padding-bottom: 80px;
+
+    &-mobileBookingCta{
+        position: fixed;
+        left: 0;
+        bottom: 0;
+        width: 100%;
+        padding: 12px 16px;
+        display: flex;
+        background-color: #fff;
+        border-top: 1px solid $color-dark6;
+    }
     
     &-gallery{
         position: relative;
@@ -134,15 +146,113 @@
         }
     }
 
-    &-body{
-        width: 100%;
+    &-bodyContainer{
+        display: flex;
         padding: 0 20px;
         padding-top: 25px;
+        max-width: 800px;
+        margin: 0 auto;
+    }
+
+    &-body{
+        width: 100%;
 
         &-row{
             display: flex;
             justify-content: flex-start;
             align-items: flex-end;
+            margin: 20px 0;
+        }
+
+        &-section{
+            margin: 25px 0;
+
+            &-title{
+                display: block;
+                width: 100%;
+                margin-bottom: 25px;
+            }
+
+            &__information{
+    
+                &-data{
+                    font-size: 14px;
+                }
+            }
+
+            &__reviews{
+
+                &-top{
+                    display: flex;
+                    align-items: center;
+                    margin-bottom: 10px;
+
+                    &__icon{
+                        margin-right: 5px;
+                    }
+
+                    &__score{
+
+                    }
+
+                    .separator{
+                        width: 1px;
+                        height: 20px;
+                        background-color: $color-dark7;
+                        margin: 0 10px;
+                    }
+
+                    &__count{
+                        &-value{
+
+                        }
+                    }
+
+                }
+
+                &-details{
+                    display: grid;
+                    grid-template-columns: repeat(1, 1fr);
+
+                    &-item{
+                        display: flex;
+                        margin: 6px 0;
+
+                        &-name{
+                            display: inline-block;
+                            flex: none;
+                            width: 50%;
+                            max-width: 165px;
+                        }
+
+                        &-value{
+                            width: 100%;
+                            display: flex;
+                            align-items: center;
+
+                            .progress{
+                                width: 100%;
+                                display: flex;
+                                background-color: $color-dark6;
+                                background-clip: content-box;
+                                padding: 0 40px;
+                                height: 4px;
+                                min-width: 4px;
+                                max-height: 4px;
+
+                                &-value{
+                                    display: inline-block;
+                                    height: 100%;
+                                }
+                            }
+
+                            &-value{
+                                font-weight: 600;
+                            }
+                        }
+                    }
+                }
+            }
         }
 
         &-location{
@@ -178,17 +288,56 @@
 
             }
         }
+    }
 
-        &-info{
-            margin-top: 30px;
+    &-bookingCta{
+        display: none;
+        width: 350px;
+        min-width: 350px;
+        padding: 25px;
+        padding-top: 35px;
+        margin-left: 60px;
+        border: 1px solid $color-dark6;
+        border-radius: 4px;
 
-            &-title{
-                font-weight: 600;
-                margin-bottom: 5px;
-            }
+        &__mobile{
+            display: block;
+            width: 100%;
+            min-width: auto;
+            margin-left: 0;
+            border: none;
+            padding: 0;
+            padding-top: 45px;
+        }
+        
+    }
 
-            &-data{
-                font-size: 14px;
+
+    @include large-desktop{
+
+        &-bodyContainer{
+            display: flex;
+        }
+
+        &-bookingCta{
+            display: block;
+        }
+        
+        &-mobileBookingCta{
+            display: none;
+        }
+    }
+
+    @include tablet{
+        
+        &-body{  
+            &-section{
+                &__reviews{
+                    &-details{
+                        grid-template-columns: repeat(2, 1fr);
+                        column-gap: 50px;
+                    }
+                }
             }
         }
     }
