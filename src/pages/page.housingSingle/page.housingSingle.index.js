@@ -1,6 +1,6 @@
 // Modules
 import React from 'react'
-import { RateReview, StarRounded } from '@material-ui/icons'
+import { StarRounded } from '@material-ui/icons'
 import {
     withRouter
 } from 'react-router-dom'
@@ -8,6 +8,7 @@ import { Button, Dialog, DialogContent, IconButton, Typography } from '@material
 import {CloseRounded} from '@material-ui/icons'
 import { withStyles, createStyles, withTheme } from '@material-ui/styles';
 import { DatePicker } from '@material-ui/pickers';
+import moment from 'moment';
 
 // Components
 import widthWindowWidth from '../../shared/widthWindowWidth';
@@ -24,6 +25,17 @@ import AppConstants from '../../utils/AppConstants';
 
 
 const RATING_TAGS = ["Check-in", "Communication", "Accuracy", "Cleanliness", "Location", "Value"]
+
+const dataRatingComments = Array(6).fill(0).map((item, itemIndex) => ({
+    id: itemIndex,
+    rating: Math.round(Math.random() * 5),
+    posted_at: moment().subtract((Math.random() * 45), "days"),
+    guest: {
+        display_name: "John Doe",
+        avatar: "https://s3.amazonaws.com/uifaces/faces/twitter/tereshenkov/128.jpg",
+    },
+    comment: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vel dolorum molestiae omnis accusantium tempore ea quisquam vitae nemo placeat velit ipsam veritatis, repellendus perspiciatis odit eum voluptas, iste rerum modi necessitatibus cumque explicabo sed nisi ad."
+})).sort((a, b) => -a.posted_at.diff(b.posted_at, "day"))
 
 const dataRatingsTags = [3.5, 4.5, 3.4, 4.7, 2.7, 4.1]
 
@@ -73,6 +85,7 @@ const styles = theme => createStyles({
         top: 0,
         borderRadius: 0
     },
+
 })
 
 class PageHousingSingle extends React.Component{
@@ -112,32 +125,33 @@ class PageHousingSingle extends React.Component{
 
         const BookingCtaContainer = ({isMobile = false}) => (
             <div className={`page-housingSingle-bookingCta ${isMobile ? "page-housingSingle-bookingCta__mobile" : ""}`}>
-                    <h4 className="page-housingSingle-bookingCta-heading">Add dates for prices</h4>
-                    <div className="hr small"/>
+                    <div className="page-housingSingle-bookingCta-heading">
+                        <Typography variant="h6">Add dates for prices</Typography>
+                    </div>
+                    <div className="hr"/>
                     <div className="page-housingSingle-bookingCta-datepickers">
                         <DatePicker
                             disableToolbar
                             variant="inline"
                             format="MM/DD/YYYY"
                             margin="normal"
-                            id="date-picker-inline"
                             label="Checkin"
                             value={this.state.formData.checkin}
                             onChange={this.handleDateChange("checkin")}
                             fullWidth
-                            classes={{root: classes.datePicker}}
+                            inputVariant="outlined"
+
                         />
                         <DatePicker
                             disableToolbar
                             variant="inline"
                             format="MM/DD/YYYY"
                             margin="normal"
-                            id="date-picker-inline"
                             label="Checkout"
                             value={this.state.formData.checkout}
                             onChange={this.handleDateChange("checkout")}
                             fullWidth   
-                            classes={{root: classes.datePicker}}
+                            inputVariant="outlined"
                         />
                     </div>
                     <Button
@@ -241,7 +255,9 @@ class PageHousingSingle extends React.Component{
                                 <div className="page-housingSingle-body-host-avatar">
                                     <img src={data.host.avatar} alt=""/>
                                 </div>
-                                <span className="page-housingSingle-body-host-name">{data.host.display_name}</span>
+                                <span className="page-housingSingle-body-host-name">
+                                    <Typography variant="subtitle2" component="span">{data.host.display_name}</Typography>
+                                </span>
                             </div>  
                         </div>
                         <BodySection
@@ -289,6 +305,39 @@ class PageHousingSingle extends React.Component{
                                                     </div>
                                                 </div>
                                             ))
+                                        }
+                                    </div>
+                                    <div className="page-housingSingle-body-section__reviews-comments">
+                                        {
+                                            dataRatingComments.map((comment) => {
+
+                                                return (
+                                                    <div key={"comment-" + comment.id} className="page-housingSingle-body-section__reviews-comments-item">
+                                                        <div className="page-housingSingle-body-section__reviews-comments-item-top">
+                                                            <div className="page-housingSingle-body-section__reviews-comments-item-top-guest">
+                                                                <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__avatar">
+                                                                    <img src={comment.guest.avatar} alt={comment.guest.display_name}/>
+                                                                </div>
+                                                                <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__right">
+                                                                    <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__right__name">
+                                                                        <Typography component="span" variant="subtitle1">{comment.guest.display_name}</Typography>
+                                                                    </div>
+                                                                    <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__right__date">
+                                                                        <Typography variant="subtitle1" component="span">{comment.posted_at.format("DD/MM/YYYY")}</Typography>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className="page-housingSingle-body-section__reviews-comments-item-top-score">
+                                                                <StarRounded color="secondary" className="page-housingSingle-body-section__reviews-comments-item-top-score__icon"/>
+                                                                <Typography className="page-housingSingle-body-section__reviews-comments-item-top-score__value" component="span" variant="h6">{comment.rating}</Typography>
+                                                            </div>
+                                                        </div>
+                                                        <div className="page-housingSingle-body-section__reviews-comments-item-body">
+                                                            <Typography variant="body1">{comment.comment}</Typography>
+                                                        </div>
+                                                    </div>
+                                                )
+                                            })
                                         }
                                     </div>
                                 </React.Fragment>

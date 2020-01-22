@@ -1,4 +1,10 @@
 
+
+require('dotenv').config()
+
+/** DATABASE */
+const sequelize = require('./database/database.index')
+
 const express = require('express')
 const app = express()
 
