@@ -57,7 +57,8 @@ module.exports = (sequelize, DataTypes) => {
                     attributes: ["id", "url"]
                 },
                 {
-                    association: "reviews"
+                    association: "reviews",
+                    attributes: ["score_checkin", "score_accuracy", "score_location", "score_communication", "score_cleanliness", "score_value",]
                 }
             ]
         })
@@ -103,6 +104,59 @@ module.exports = (sequelize, DataTypes) => {
 
         return response
 
+    }
+
+
+    Housing.getById = async id => {
+
+        const response = {
+            error: false,
+            data: null
+        }
+
+        let housing = await Housing.findByPk(id, {
+            attributes: {exclude: ["owner_id"]},
+            include: [
+                {
+                    association: "images",
+                    attributes: ["id", "url", "description"],
+                    separate: true
+                },
+                {
+                    association: "host",
+                    attributes: ["id", "first_name", "last_name", "avatar"]
+                },
+                {
+                    association: "reviews",
+                    attributes: [
+                        [sequelize.fn("AVG", sequelize.col("score_checkin")), "score_checkin"],
+                        [sequelize.fn("AVG", sequelize.col("score_value")), "score_value"],
+                        [sequelize.fn("AVG", sequelize.col("score_communication")), "score_communication"],
+                        [sequelize.fn("AVG", sequelize.col("score_location")), "score_location"],
+                        [sequelize.fn("AVG", sequelize.col("score_cleanliness")), "score_cleanliness"],
+                        [sequelize.fn("AVG", sequelize.col("score_accuracy")), "score_accuracy"],
+                        [sequelize.fn("COUNT", sequelize.col("reviews.id")), "count"]
+                    ]
+                }
+            ]
+        })
+
+        if(housing){
+            response.data = {
+                ...housing.get(),
+                reviews: (housing.reviews && housing.reviews[0]) ? {
+                    count: housing.reviews[0].get('count'),
+                    score_checkin: Math.round(housing.reviews[0].score_checkin * 100) / 100,
+                    score_value: Math.round(housing.reviews[0].score_value * 100) / 100,
+                    score_communication: Math.round(housing.reviews[0].score_communication * 100) / 100,
+                    score_location: Math.round(housing.reviews[0].score_location * 100) / 100,
+                    score_cleanliness: Math.round(housing.reviews[0].score_cleanliness * 100) / 100,
+                    score_accuracy: Math.round(housing.reviews[0].score_accuracy * 100) / 100,
+                } : null
+            }
+        }
+
+        return response
     }
 
     return Housing

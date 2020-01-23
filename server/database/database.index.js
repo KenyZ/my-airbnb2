@@ -40,7 +40,7 @@ HousingReview.belongsTo(User, {as: "author", foreignKey: "author_id"})
 
 // Hosts's housings
 User.hasMany(Housing, {as: "housings", foreignKey: "owner_id"})
-Housing.belongsTo(User, {as: "housings", foreignKey: "owner_id"})
+Housing.belongsTo(User, {as: "host", foreignKey: "owner_id"})
 
 // Guest's housings || Bookings
 Housing.belongsToMany(User, {through: Booking, as: "guests", foreignKey: "housing_id", otherKey: "guest_id"})

@@ -33,7 +33,7 @@ app.get("/", async (req, res) => {
     return res.send({api_running: true})
 })
 
-app.get('/housing', async (req, res) => {
+app.get("/housing", async (req, res) => {
 
     const limit = (req.query.limit && Number(req.query.limit)) || null
     const offset = (req.query.offset && Number(req.query.offset)) || null
@@ -41,6 +41,15 @@ app.get('/housing', async (req, res) => {
     const {error, data: housings} = await Housing.getAll(limit, offset)
 
     return res.send(housings)
+})
+
+app.get("/housing/:id", async (req, res) => {
+
+    const housingId = (req.params.id && Number(req.params.id)) || null
+
+    const {error, data: housing} = await Housing.getById(housingId)
+
+    return res.send(housing)
 })
 
 app.listen(PORT, () => console.log(`API launched on PORT=${PORT}`))
