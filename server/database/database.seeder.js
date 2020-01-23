@@ -69,7 +69,7 @@ async function generateDumpData(){
             description: faker.random.boolean() ? faker.lorem.paragraph(4) : null,
             owner_id: host.get('id'),
             images: Utils.loop(images, img => ({
-                url: faker.image.city(400, 400),
+                url: faker.image.imageUrl(400, 400, "city", true),
                 description: faker.random.boolean() ? faker.lorem.paragraph(2) : null
             })),
         }, {

@@ -41,7 +41,7 @@ class Carousel extends React.Component {
                     className="Carousel"
                     ref={this.props.carouselRef}
                     afterChange={this._afterChange}
-
+                    lazyLoad={this.props.lazyLoad}
                     {...this.props.SlickProps}
 
                 >{
@@ -73,12 +73,14 @@ class Carousel extends React.Component {
 }
 
 Carousel.defaultProps = {
-    SlickProps: {}
+    SlickProps: {},
+    lazyLoad: true,
 }
 
 Carousel.propTypes = {
     images: PropTypes.array.isRequired,
     carouselRef: PropTypes.any,
+    lazyLoad: PropTypes.bool,
     SlickProps: PropTypes.object
 }
 
