@@ -39,19 +39,20 @@ User.hasOne(HousingReview, {as: "author", foreignKey: "author_id"})
 HousingReview.belongsTo(User, {as: "author", foreignKey: "author_id"})
 
 // Hosts's housings
-User.hasMany(Housing, {as: "owned_housings", foreignKey: "owner_id"})
-Housing.belongsTo(User, {as: "owned_housings", foreignKey: "owner_id"})
+User.hasMany(Housing, {as: "housings", foreignKey: "owner_id"})
+Housing.belongsTo(User, {as: "housings", foreignKey: "owner_id"})
 
-// Guest's housings
-Housing.belongsToMany(User, {through: Booking, foreignKey: "rented_housing", otherKey: "guest_id"})
-User.belongsToMany(Housing, {through: Booking, otherKey: "rented_housing", foreignKey: "guest_id"})
+// Guest's housings || Bookings
+Housing.belongsToMany(User, {through: Booking, as: "guests", foreignKey: "housing_id", otherKey: "guest_id"})
+User.belongsToMany(Housing, {through: Booking, as: "bookings", otherKey: "housing_id", foreignKey: "guest_id"})
 
 
-
-module.exports = {sequelize, models: {
+sequelize.models = {
   User,
   Housing,
   HousingImage,
   HousingReview,
   Booking,
-}}
+}
+
+module.exports = sequelize
