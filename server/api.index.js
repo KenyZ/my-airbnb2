@@ -6,6 +6,7 @@ require('dotenv').config()
 const sequelize = require('./database/database.index')
 const {
     Housing,
+    HousingReview,
     User
 } = sequelize.models
 
@@ -35,22 +36,40 @@ app.get("/", async (req, res) => {
 
 app.get("/housing", async (req, res) => {
 
-    const limit = (req.query.limit && Number(req.query.limit)) || null
-    const offset = (req.query.offset && Number(req.query.offset)) || null
+    // query
+    const offset = (req.query.offset && Number(req.query.offset)) || undefined
 
-    const {error, data: housings} = await Housing.getAll(limit, offset)
+    //response
+    const response = await Housing.getAll(5, offset)
 
-    return res.send(housings)
+    return res.status(response.status).send(response)
 })
 
 app.get("/housing/:id", async (req, res) => {
 
+    // params
     const housingId = (req.params.id && Number(req.params.id)) || null
 
-    const {error, data: housing} = await Housing.getById(housingId)
+    //response
+    const response = await Housing.getById(housingId)
 
-    return res.send(housing)
+    return res.status(response.status).send(response)
 })
+
+app.get("/housing/:id/reviews", async (req, res) => {
+
+    // params
+    const housingId = (req.params.id && Number(req.params.id)) || null
+
+    // query
+    const offset = (req.query.offset && Number(req.query.offset)) || undefined
+
+    //response
+    const response = await Housing.getReviews(housingId, 5, offset)
+
+    return res.status(response.status).send(response)
+})
+
 
 app.listen(PORT, () => console.log(`API launched on PORT=${PORT}`))
 

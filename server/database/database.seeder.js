@@ -1,3 +1,4 @@
+console.clear()
 require('dotenv').config()
 
 const sequelize = require('./database.index')
@@ -19,13 +20,17 @@ const Utils = {
             _array.splice(randomIndex, 1)
             return randomItem
         })
-    }
+    },
+    randomFloat: (max, min = 0, decimals = 2) => Math.round( ((Math.random() * (max - min)) + min) * Math.pow(10, decimals) ) / Math.pow(10, decimals)
 }
 
 
 
-const USERS_COUNT = 15
+const USERS_COUNT = 55
 const USERS_ROLE = ["guest", "host"]
+
+
+let housingsImageCount = 0
 
 async function generateDumpData(){
 
@@ -60,18 +65,26 @@ async function generateDumpData(){
         const bookingsCount = guests.length > 1 ? (faker.random.number(guests.length - 1) + 1) : 0
         const housingGuests = Utils.randomSubArray(guests, bookingsCount)
 
+        const location_country = faker.address.country()
+
         const housing = await sequelize.models.Housing.create({
-            title: faker.address.country() + " " + faker.address.city() + " " + faker.address.streetName(),
+            title: location_country + " " + faker.address.city() + " " + faker.address.streetName(),
             info_guest: faker.random.number(7) + 1,
             info_kitchen: infoKitchen === 0 ? null : infoKitchen,
             info_bed: faker.random.number(7) + 1,
             info_wifi: faker.random.boolean(),
-            description: faker.random.boolean() ? faker.lorem.paragraph(4) : null,
+            description: faker.lorem.paragraph(4),
+            location_country: location_country,
             owner_id: host.get('id'),
-            images: Utils.loop(images, img => ({
-                url: faker.image.imageUrl(400, 400, "city", true),
-                description: faker.random.boolean() ? faker.lorem.paragraph(2) : null
-            })),
+            images: Utils.loop(images, img => {
+
+                housingsImageCount++;
+
+                return {
+                    url: "https://picsum.photos/id/" + housingsImageCount + "/400/400",
+                    description: faker.random.boolean() ? faker.lorem.paragraph(2) : null
+                }
+            }),
         }, {
             include: [
                 {
@@ -81,56 +94,78 @@ async function generateDumpData(){
             ]
         })
 
-        const bookings = await Promise.all(housingGuests.map(housingGuestsItems => {
-
-            const checkin = moment().subtract(faker.random.number(200), "day")
-            const checkout = checkin.add(faker.random.number(16) + 4, "day")
-
-            return sequelize.models.Booking.create({
-                checkin: checkin.format("YYYY-MM-DD HH:mm:ss"),
-                checkout: checkout.format("YYYY-MM-DD HH:mm:ss"),
-                guest_id: housingGuestsItems.get('id'),
-                housing_id: housing.get('id'),
-            })
-        }))
-
-        console.log("####")
-        console.log("bookings => " + bookings.length)
-        console.log("####")
-
-        const reviews = await Promise.all(housingGuests.map(housingGuestsItems => {
-            return sequelize.models.HousingReview.create({
-                author_id: housingGuestsItems.get('id'),
-                housing_id: housing.get('id'),
-                posted_at: new Date(),
-                comment: faker.random.boolean() ? faker.lorem.paragraph(2) : null,
-                score_checkin: faker.random.number(5),
-                score_value: faker.random.number(5),
-                score_location: faker.random.number(5),
-                score_communication: faker.random.number(5),
-                score_cleanliness: faker.random.number(5),
-                score_accuracy: faker.random.number(5),
-            })
-        }))
-
-        console.log("####")
-        console.log("reviews => " + reviews.length)
-        console.log("####")
-
+        return housing
     }))
 
     console.log("####")
     console.log("housings => " + housings.length)
     console.log("####")
 
-    return housings
+
+    const bookingsAndReviews = await Promise.all(guests.map(async guestsItem => {
+
+        const guestsItemRentedHousings = Utils.randomSubArray(housings, faker.random.number(housings.length - 1) + 1)
+
+        const bookings = await sequelize.models.Booking.bulkCreate(guestsItemRentedHousings.map(h => {
+
+            const checkin = moment().subtract(faker.random.number(200), "day")
+            const checkout = checkin.add(faker.random.number(16) + 4, "day")
+
+            return {
+                checkin: checkin.format("YYYY-MM-DD HH:mm:ss"),
+                checkout: checkout.format("YYYY-MM-DD HH:mm:ss"),
+                guest_id: guestsItem.get('id'),
+                housing_id: h.get('id'),
+            }
+        }))
+        
+
+        // console.log("####")
+        // console.log("bookings => " + bookings.length)
+        // console.log("####")
+
+        const reviews = await sequelize.models.HousingReview.bulkCreate(guestsItemRentedHousings.map(h => {
+
+            return {
+                author_id: guestsItem.get('id'),
+                housing_id: h.get('id'),
+                posted_at: moment().subtract(faker.random.number(200), "day").format("YYYY-MM-DD HH:mm:ss"),
+                comment: faker.random.boolean() ? faker.lorem.paragraph(2) : null,
+                score_checkin: Utils.randomFloat(5.0, 2.3, 2),
+                score_value: Utils.randomFloat(5.0, 2.3, 2),
+                score_location: Utils.randomFloat(5.0, 2.3, 2),
+                score_communication: Utils.randomFloat(5.0, 2.3, 2),
+                score_cleanliness: Utils.randomFloat(5.0, 2.3, 2),
+                score_accuracy: Utils.randomFloat(5.0, 2.3, 2),
+            }
+        }))        
+
+        // console.log("####")
+        // console.log("reviews => " + reviews.length)
+        // console.log("####")
+
+        return {bookings, reviews}
+    }))
+
+
+    console.log("####")
+    console.log("bookingsAndReviews => " + bookingsAndReviews.length)
+    console.log("####")
+
+    return bookingsAndReviews
 
 }
 
 sequelize.sync({force: true}).then(res => {
     console.log("DATABASE HAS BEEN SYNCED")
 
-    generateDumpData().then(res => console.log("ALL DATA HAS BEEN GENERATED"))
+    generateDumpData().then(res => {
+        console.log("ALL DATA HAS BEEN GENERATED")
+        process.exit(0)
+    })
 })
 
-// generateDumpData().then(res => console.log("ALL DATA HAS BEEN GENERATED"))
+// generateDumpData().then(res => {
+//     console.log("ALL DATA HAS BEEN GENERATED")
+//     process.exit(0)
+// })

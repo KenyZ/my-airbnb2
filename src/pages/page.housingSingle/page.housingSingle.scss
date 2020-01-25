@@ -6,6 +6,7 @@
 
     &-mobileBookingCta{
         position: fixed;
+        z-index: 1;
         left: 0;
         bottom: 0;
         width: 100%;
@@ -150,12 +151,16 @@
         display: flex;
         padding: 0 20px;
         padding-top: 25px;
-        max-width: 800px;
+        max-width: 990px;
         margin: 0 auto;
     }
 
     &-body{
         width: 100%;
+
+        &-title{
+            width: 100%
+        }
 
         &-row{
             display: flex;
@@ -171,6 +176,7 @@
                 display: block;
                 width: 100%;
                 margin-bottom: 25px;
+
             }
 
             &__information{
@@ -223,7 +229,8 @@
                             flex: none;
                             width: 50%;
                             max-width: 165px;
-                        }
+                            min-width: 140px;
+                    }
 
                         &-value{
                             width: 100%;
@@ -235,7 +242,8 @@
                                 display: flex;
                                 background-color: $color-dark6;
                                 background-clip: content-box;
-                                padding: 0 40px;
+                                // padding: 0 40px;
+                                margin-right: 10px;
                                 height: 4px;
                                 min-width: 4px;
                                 max-height: 4px;
@@ -248,6 +256,7 @@
 
                             &-value{
                                 font-weight: 600;
+                                width: 23px;
                             }
                         }
                     }
@@ -368,7 +377,7 @@
     }
 
 
-    @include large-desktop{
+    @include desktop{
 
         &-bodyContainer{
             display: flex;

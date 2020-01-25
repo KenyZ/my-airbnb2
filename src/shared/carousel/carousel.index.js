@@ -2,6 +2,7 @@
 import React from 'react'
 import Slider from 'react-slick';
 import PropTypes from 'prop-types'
+import Skeleton from '@material-ui/lab/Skeleton'
 
 // Assets
 import './carousel.scss'
@@ -29,6 +30,17 @@ class Carousel extends React.Component {
     }
 
     render(){
+
+        if(!this.props.images || !this.props.images.length){
+            return (
+                <div className="Carousel">
+                    <div className="Carousel-item">
+                        <Skeleton variant="rect" style={{paddingTop: "62.5%"}}/>
+                    </div>
+                </div>
+            )
+        }
+
         return (
 
             this.props.images.length > 1 ? (
@@ -75,10 +87,11 @@ class Carousel extends React.Component {
 Carousel.defaultProps = {
     SlickProps: {},
     lazyLoad: true,
+    images: []
 }
 
 Carousel.propTypes = {
-    images: PropTypes.array.isRequired,
+    images: PropTypes.array,
     carouselRef: PropTypes.any,
     lazyLoad: PropTypes.bool,
     SlickProps: PropTypes.object

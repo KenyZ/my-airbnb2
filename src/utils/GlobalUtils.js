@@ -8,6 +8,17 @@ export default {
         }
     
         return className
+    },
+
+
+    renderHousingTags: housing => {
+        return [
+            housing.info_guest + " guests",
+            housing.info_bed + " beds",
+            housing.info_kitchen && housing.info_kitchen + " kitchens",
+            housing.info_wifi && "Wifi",
+        ].filter(tag => tag)
+        .join(" · ")
     }
     
 }

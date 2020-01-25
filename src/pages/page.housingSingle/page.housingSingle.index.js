@@ -8,6 +8,8 @@ import { Button, Dialog, DialogContent, IconButton, Typography } from '@material
 import {CloseRounded} from '@material-ui/icons'
 import { withStyles, createStyles, withTheme } from '@material-ui/styles';
 import { DatePicker } from '@material-ui/pickers';
+import Skeleton from '@material-ui/lab/Skeleton';
+
 import moment from 'moment';
 
 // Components
@@ -15,16 +17,18 @@ import widthWindowWidth from '../../shared/widthWindowWidth';
 import GalleryModal from '../../shared/galleryModal/galleryModal.index';
 import Carousel from '../../shared/carousel/carousel.index';
 
+
 // Assets
 import './page.housingSingle.scss'
 
 // Utils
 import GlobalUtils from '../../utils/GlobalUtils';
 import AppConstants from '../../utils/AppConstants';
+const capitalize = (s) => {
+    if (typeof s !== 'string') return ''
+    return s.charAt(0).toUpperCase() + s.slice(1)
+}
 
-
-
-const RATING_TAGS = ["Check-in", "Communication", "Accuracy", "Cleanliness", "Location", "Value"]
 
 const dataRatingComments = Array(6).fill(0).map((item, itemIndex) => ({
     id: itemIndex,
@@ -37,26 +41,6 @@ const dataRatingComments = Array(6).fill(0).map((item, itemIndex) => ({
     comment: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vel dolorum molestiae omnis accusantium tempore ea quisquam vitae nemo placeat velit ipsam veritatis, repellendus perspiciatis odit eum voluptas, iste rerum modi necessitatibus cumque explicabo sed nisi ad."
 })).sort((a, b) => -a.posted_at.diff(b.posted_at, "day"))
 
-const dataRatingsTags = [3.5, 4.5, 3.4, 4.7, 2.7, 4.1]
-
-const data = {
-    id: 0, 
-    title: "Jolie petite Chambre près du Canal St Martin", 
-    rating: {
-        count: 124,
-        value: 4.3
-    },
-    images: Array(7).fill(true).map((_, i) => "https://picsum.photos/id/" + (i) +"/600/300"),
-    location: {
-        city: "Paris",
-        country: "France"
-    },
-    tags: ["2 guest", "1 bath", "1 kitchen", "Wifi"],
-    host: {
-        display_name: "John Doe",
-        avatar: "https://s3.amazonaws.com/uifaces/faces/twitter/tereshenkov/128.jpg"
-    }
-}
 
 const styles = theme => createStyles({
     viewPhotosBtn__root: {
@@ -72,7 +56,7 @@ const styles = theme => createStyles({
 
 
     mobileBookingCta__btn: {
-        marginLeft: "auto"
+        marginLeft: "auto",
     },
 
     bookingCta__btn: {
@@ -102,8 +86,35 @@ class PageHousingSingle extends React.Component{
             formData: {
                 checkin: null,
                 chekout: null,
-            }
+            },
+
+            housing: null,
         }
+    }
+
+    componentDidMount(){
+
+        const housingId = this.props.match.params.id
+
+        if(housingId){
+
+            fetch(AppConstants.API_DOMAIN + "/housing/" + housingId)
+            .then(res => res.json())
+            .then(res => {
+
+                if(res.error){
+                    return
+                }
+
+                this.setState({
+                    housing: res.data
+                })
+            })
+        } else {
+            console.error("No id matched")
+            // go to 404
+        }
+        
     }
 
     onCloseModal = () => {
@@ -123,44 +134,58 @@ class PageHousingSingle extends React.Component{
 
         const {classes} = this.props
 
+        const housing = this.state.housing
+
         const BookingCtaContainer = ({isMobile = false}) => (
             <div className={`page-housingSingle-bookingCta ${isMobile ? "page-housingSingle-bookingCta__mobile" : ""}`}>
                     <div className="page-housingSingle-bookingCta-heading">
-                        <Typography variant="h6">Add dates for prices</Typography>
+                        {housing && <Typography variant="h6">Add dates for prices</Typography>}
+                        {!housing && <Skeleton variant="text"/>}
                     </div>
                     <div className="hr"/>
                     <div className="page-housingSingle-bookingCta-datepickers">
-                        <DatePicker
-                            disableToolbar
-                            variant="inline"
-                            format="MM/DD/YYYY"
-                            margin="normal"
-                            label="Checkin"
-                            value={this.state.formData.checkin}
-                            onChange={this.handleDateChange("checkin")}
-                            fullWidth
-                            inputVariant="outlined"
+                        {housing ? (
+                            <React.Fragment>
+                                <DatePicker
+                                    disableToolbar
+                                    variant="inline"
+                                    format="MM/DD/YYYY"
+                                    margin="normal"
+                                    label="Checkin"
+                                    value={this.state.formData.checkin}
+                                    onChange={this.handleDateChange("checkin")}
+                                    fullWidth
+                                    inputVariant="outlined"
 
-                        />
-                        <DatePicker
-                            disableToolbar
-                            variant="inline"
-                            format="MM/DD/YYYY"
-                            margin="normal"
-                            label="Checkout"
-                            value={this.state.formData.checkout}
-                            onChange={this.handleDateChange("checkout")}
-                            fullWidth   
-                            inputVariant="outlined"
-                        />
+                                />
+                                <DatePicker
+                                    disableToolbar
+                                    variant="inline"
+                                    format="MM/DD/YYYY"
+                                    margin="normal"
+                                    label="Checkout"
+                                    value={this.state.formData.checkout}
+                                    onChange={this.handleDateChange("checkout")}
+                                    fullWidth   
+                                    inputVariant="outlined"
+                                />
+                            </React.Fragment>
+                        ) : (
+                            <React.Fragment>
+                                <Skeleton variant="rect" style={{marginBottom: 15}}/>
+                                <Skeleton variant="rect" style={{marginBottom: 15}}/>
+                            </React.Fragment>
+                        )}
                     </div>
-                    <Button
+                    {housing ? (<Button
                         variant="contained"
                         color="primary"
                         size="large"
                         fullWidth
                         classes={{root: classes.bookingCta__btn}}
-                    >Book</Button>
+                    >Book</Button>) : (
+                        <Skeleton variant="rect" height={40}/>
+                    )}
                 </div>
         )
         return (
@@ -187,16 +212,16 @@ class PageHousingSingle extends React.Component{
                 </div>
                 {
                     // show carousel on mobile && grid on tablet and more
-                    (this.props.windowWidth > AppConstants.BREAKPOINTS.tablet && data.images.length !== 2) ? (
+                    (this.props.windowWidth > AppConstants.BREAKPOINTS.tablet && (housing && housing.images.length !== 2)) ? (
                         <div className={GlobalUtils.setClassnames("page-housingSingle-gallery", {
-                            "page-housingSingle-gallery-1": data.images.length === 1,
-                            "page-housingSingle-gallery-2": data.images.length === 2,
-                            "page-housingSingle-gallery-3": data.images.length === 3,
-                            "page-housingSingle-gallery-4": data.images.length === 4,
-                            "page-housingSingle-gallery-5andmore": data.images.length >= 5,
+                            "page-housingSingle-gallery-1": housing.images.length === 1,
+                            "page-housingSingle-gallery-2": housing.images.length === 2,
+                            "page-housingSingle-gallery-3": housing.images.length === 3,
+                            "page-housingSingle-gallery-4": housing.images.length === 4,
+                            "page-housingSingle-gallery-5andmore": housing.images.length >= 5,
                         })}>
                             {
-                                data.images.length > 1 && (
+                                housing.images.length > 1 && (
                                     <>
                                         <Button 
                                             onClick={() => this.setState({galleryModalIsOpen: true})} 
@@ -206,7 +231,7 @@ class PageHousingSingle extends React.Component{
                                         >View photos</Button>
 
                                         <GalleryModal
-                                            images={data.images}
+                                            images={housing.images}
                                             onClose={this.onCloseModal}
                                             open={this.state.galleryModalIsOpen}
                                             startAt={this.state.galleryModalStartAt}
@@ -216,7 +241,7 @@ class PageHousingSingle extends React.Component{
                             }
                             <div className="page-housingSingle-gallery-grid">
                             {
-                               data.images.slice(0, 5).map((image, imageIndex) => {
+                               housing.images.slice(0, 5).map((image, imageIndex) => {
                                     return (
                                         <Button
                                             classes={{root: classes.galleryItemBtn}}
@@ -225,7 +250,7 @@ class PageHousingSingle extends React.Component{
                                             onClick={() => this.setState({galleryModalIsOpen: true, galleryModalStartAt: imageIndex})}
                                         >
                                             <div>
-                                                <img src={image} alt=""/>
+                                                <img src={image.url} alt=""/>
                                             </div>
                                         </Button>
                                         
@@ -235,9 +260,7 @@ class PageHousingSingle extends React.Component{
                             </div>
                         </div>
                     ) : (
-                        <Carousel
-                            images={data.images}
-                        />
+                        housing ? (<Carousel images={housing.images.map(img => img.url)}/>) : (<Skeleton variant="rect" animation="wave" style={{paddingTop: (100 / (560/260)) + "%"}}/>)
                     )
                 }
 
@@ -245,26 +268,49 @@ class PageHousingSingle extends React.Component{
                     <div className="page-housingSingle-body">
                         <div className="page-housingSingle-body-row">
                             <div className="page-housingSingle-body-title">
-                                <Typography variant="h3">{data.title}</Typography>
+                                
+                                {!housing && (
+                                    <React.Fragment>
+                                        <Skeleton variant="text" width={"100%"}/>
+                                        <Skeleton variant="text" width={"100%"}/>
+                                        <Skeleton variant="text" width={"50%"}/>
+                                    </React.Fragment>
+                                )}
+                                {housing && <Typography variant="h3">{housing.title}</Typography>}
                             </div>
                         </div>
 
                         <div className="page-housingSingle-body-row">
-                            <span className="page-housingSingle-body-location">{data.location.city}</span>
+                            <span className="page-housingSingle-body-location">Paris</span>
                             <div className="page-housingSingle-body-host">
                                 <div className="page-housingSingle-body-host-avatar">
-                                    <img src={data.host.avatar} alt=""/>
+                                    {housing ?( <img src={housing.host.avatar} alt=""/>) : (
+                                        <Skeleton variant="circle" width={35} height={35}/>
+                                    )}
                                 </div>
-                                <span className="page-housingSingle-body-host-name">
-                                    <Typography variant="subtitle2" component="span">{data.host.display_name}</Typography>
-                                </span>
+                                <div className="page-housingSingle-body-host-name">
+                                    {housing ? (
+                                        <Typography variant="subtitle2" component="span">
+                                            {`${housing.host.first_name} ${housing.host.last_name}`}
+                                        </Typography>) : 
+                                        (
+                                            <Skeleton variant="text" width={45}/>
+                                        )
+                                    }
+                                </div>
                             </div>  
                         </div>
                         <BodySection
                             title="Information about the housing"
                             name="information"
                             body={
-                                <Typography variant="subtitle2" className="page-housingSingle-body-info-data">{data.tags.join(" · ")}</Typography>
+                                housing ? (
+                                    <Typography variant="subtitle2" className="page-housingSingle-body-info-data">
+                                        {GlobalUtils.renderHousingTags(housing)}
+                                    </Typography>
+                                ) : (
+                                    <Skeleton variant="text"/>
+                                )
                             }
                         />
                         <div className="hr"/>
@@ -273,7 +319,15 @@ class PageHousingSingle extends React.Component{
                             name="description"
                             body={
                                 <div className="page-housingSingle-body-section-body">
-                                    <Typography variant="body2" component="p">Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vel dolorum molestiae omnis accusantium tempore ea quisquam vitae nemo placeat velit ipsam veritatis, repellendus perspiciatis odit eum voluptas, iste rerum modi necessitatibus cumque explicabo sed nisi ad. Consectetur impedit nihil voluptate atque quis non quidem deleniti minima voluptates qui! Voluptatem velit porro illum tempora omnis.</Typography>
+                                    {housing ? (<Typography variant="body2" component="p">{housing.description}</Typography>) : (
+                                        <React.Fragment>
+                                            <Skeleton variant="text"/>
+                                            <Skeleton variant="text"/>
+                                            <Skeleton variant="text"/>
+                                            <Skeleton variant="text"/>
+                                            <Skeleton variant="text" width={"80%"}/>
+                                        </React.Fragment>
+                                    )}
                                 </div>
                             }
                         />
@@ -282,26 +336,28 @@ class PageHousingSingle extends React.Component{
                             title="Reviews"
                             name="reviews"
                             body={
-                                <React.Fragment>
+                                housing ? (<React.Fragment>
                                     <div className="page-housingSingle-body-section__reviews-top">
                                         <StarRounded color="secondary" className="page-housingSingle-body-section__reviews-top__icon"/>
-                                        <Typography className="page-housingSingle-body-section__reviews-top__score" component="span" variant="h6">4.42</Typography>
+                                        {housing && <Typography className="page-housingSingle-body-section__reviews-top__score" component="span" variant="h6">{housing.reviews.score_total}</Typography>}
                                         <div className="separator vertical"/>
                                         <span className="page-housingSingle-body-section__reviews-top__count">
-                                            <Typography component="span" className="page-housingSingle-body-section__reviews-top__count-value">462</Typography>
+                                            {housing && <Typography component="span" className="page-housingSingle-body-section__reviews-top__count-value">{housing.reviews.count}</Typography>}
                                             <span> reviews</span>
                                         </span>
                                     </div>
                                     <div className="page-housingSingle-body-section__reviews-details">
                                         {
-                                            RATING_TAGS.map((tag, tagIndex) => (
-                                                <div key={"rating-tag-" + tagIndex} className="page-housingSingle-body-section__reviews-details-item">
-                                                    <div className="page-housingSingle-body-section__reviews-details-item-name">{tag}</div>
+                                            housing && Object.entries(housing.reviews.score_details).map(([scoreName, score], scoreIndex) => (
+                                                <div key={"rating-score-" + scoreIndex} className="page-housingSingle-body-section__reviews-details-item">
+                                                    <div className="page-housingSingle-body-section__reviews-details-item-name">
+                                                        <Typography variant="body">{capitalize(scoreName)}</Typography>
+                                                    </div>
                                                     <div className="page-housingSingle-body-section__reviews-details-item-value">
                                                         <div className="progress">
-                                                            <div style={{backgroundColor: this.props.theme.palette.secondary.main, width: (dataRatingsTags[tagIndex] * 100 / 5) + "%"}} className="progress-value"></div>
+                                                            <div style={{backgroundColor: this.props.theme.palette.secondary.main, width: (score * 100 / 5) + "%"}} className="progress-value"></div>
                                                         </div>
-                                                        <div className="page-housingSingle-body-section__reviews-details-item-value-value">{dataRatingsTags[tagIndex]}</div>
+                                                        <div className="page-housingSingle-body-section__reviews-details-item-value-value">{score}</div>
                                                     </div>
                                                 </div>
                                             ))
@@ -340,7 +396,9 @@ class PageHousingSingle extends React.Component{
                                             })
                                         }
                                     </div>
-                                </React.Fragment>
+                                </React.Fragment>) : (
+                                    <Skeleton variant="rect" height={200}/>
+                                )
                             }
                         />
                     </div>
