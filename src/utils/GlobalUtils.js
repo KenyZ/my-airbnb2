@@ -19,6 +19,8 @@ export default {
             housing.info_wifi && "Wifi",
         ].filter(tag => tag)
         .join(" · ")
-    }
+    },
+
+    renderUserDisplayName: user => user.first_name + " " + user.last_name
     
 }

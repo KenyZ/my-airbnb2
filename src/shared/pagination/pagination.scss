@@ -1,0 +1,49 @@
+@import '../../styles/helpers/variables.scss';
+
+.Pagination{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px 0;
+
+    &-arrow{
+
+        &-prev{
+
+        }
+
+        &-next{
+
+        }
+
+    }
+
+    &-list{
+
+        .dots{
+            height: 28px;
+            width: 28px;
+            line-height: 28px;
+            text-align: center;
+            display: inline-block;
+        }
+
+        &-btn{
+            padding: 10px;
+            margin: 0 5px;
+            border-radius: 6px;
+
+            & > span{
+                height: 18px;
+                width: 18px;
+                line-height: 18px;
+                display: inline-block;
+            }
+
+            &.current{
+                background-color: $color-primary;
+                color: #fff
+            }
+        }
+    }
+}

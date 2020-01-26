@@ -4,18 +4,18 @@ import { StarRounded } from '@material-ui/icons'
 import {
     withRouter
 } from 'react-router-dom'
-import { Button, Dialog, DialogContent, IconButton, Typography } from '@material-ui/core';
+import { Button, Dialog, DialogContent, IconButton, Typography, CircularProgress } from '@material-ui/core';
 import {CloseRounded} from '@material-ui/icons'
 import { withStyles, createStyles, withTheme } from '@material-ui/styles';
 import { DatePicker } from '@material-ui/pickers';
 import Skeleton from '@material-ui/lab/Skeleton';
-
 import moment from 'moment';
 
 // Components
 import widthWindowWidth from '../../shared/widthWindowWidth';
 import GalleryModal from '../../shared/galleryModal/galleryModal.index';
 import Carousel from '../../shared/carousel/carousel.index';
+import Pagination from '../../shared/pagination/pagination.index'
 
 
 // Assets
@@ -24,22 +24,13 @@ import './page.housingSingle.scss'
 // Utils
 import GlobalUtils from '../../utils/GlobalUtils';
 import AppConstants from '../../utils/AppConstants';
+
+
+
 const capitalize = (s) => {
     if (typeof s !== 'string') return ''
     return s.charAt(0).toUpperCase() + s.slice(1)
 }
-
-
-const dataRatingComments = Array(6).fill(0).map((item, itemIndex) => ({
-    id: itemIndex,
-    rating: Math.round(Math.random() * 5),
-    posted_at: moment().subtract((Math.random() * 45), "days"),
-    guest: {
-        display_name: "John Doe",
-        avatar: "https://s3.amazonaws.com/uifaces/faces/twitter/tereshenkov/128.jpg",
-    },
-    comment: "Lorem ipsum, dolor sit amet consectetur adipisicing elit. Vel dolorum molestiae omnis accusantium tempore ea quisquam vitae nemo placeat velit ipsam veritatis, repellendus perspiciatis odit eum voluptas, iste rerum modi necessitatibus cumque explicabo sed nisi ad."
-})).sort((a, b) => -a.posted_at.diff(b.posted_at, "day"))
 
 
 const styles = theme => createStyles({
@@ -89,15 +80,39 @@ class PageHousingSingle extends React.Component{
             },
 
             housing: null,
+
+            reviews: null,
+            reviewsPagination: null
         }
+
+        this.reviewsSectionRef = React.createRef()
+    }
+
+    fetchHousingReviews = (page = 0) => {
+
+        const housingId = this.props.match.params.id
+
+        return fetch(AppConstants.API_DOMAIN + "/housing/" + housingId + "/reviews?offset=" + page)
+        .then(res => res.json())
+        .then(res => {
+
+            if(res.error){
+                return
+            }
+
+            this.setState({
+                reviews: res.data.list,
+                reviewsPagination: res.data.pagination
+            })
+        })
     }
 
     componentDidMount(){
-
         const housingId = this.props.match.params.id
 
         if(housingId){
 
+            // Fetch housing data
             fetch(AppConstants.API_DOMAIN + "/housing/" + housingId)
             .then(res => res.json())
             .then(res => {
@@ -110,6 +125,9 @@ class PageHousingSingle extends React.Component{
                     housing: res.data
                 })
             })
+
+            // Fetch reviews
+            this.fetchHousingReviews(0)
         } else {
             console.error("No id matched")
             // go to 404
@@ -130,11 +148,19 @@ class PageHousingSingle extends React.Component{
         })
     }
 
+    handlePagination = page => {
+        this.fetchHousingReviews(page).then(() => {
+            const reviewsAnchor = this.reviewsSectionRef
+            window.scrollTo(0, reviewsAnchor.current.offsetTop)
+        })
+    }
+
     render(){
 
         const {classes} = this.props
 
         const housing = this.state.housing
+        const reviews = this.state.reviews
 
         const BookingCtaContainer = ({isMobile = false}) => (
             <div className={`page-housingSingle-bookingCta ${isMobile ? "page-housingSingle-bookingCta__mobile" : ""}`}>
@@ -291,7 +317,7 @@ class PageHousingSingle extends React.Component{
                                 <div className="page-housingSingle-body-host-name">
                                     {housing ? (
                                         <Typography variant="subtitle2" component="span">
-                                            {`${housing.host.first_name} ${housing.host.last_name}`}
+                                            {GlobalUtils.renderUserDisplayName(housing.host)}
                                         </Typography>) : 
                                         (
                                             <Skeleton variant="text" width={45}/>
@@ -335,6 +361,7 @@ class PageHousingSingle extends React.Component{
                         <BodySection
                             title="Reviews"
                             name="reviews"
+                            sectionRef={this.reviewsSectionRef}
                             body={
                                 housing ? (<React.Fragment>
                                     <div className="page-housingSingle-body-section__reviews-top">
@@ -351,7 +378,7 @@ class PageHousingSingle extends React.Component{
                                             housing && Object.entries(housing.reviews.score_details).map(([scoreName, score], scoreIndex) => (
                                                 <div key={"rating-score-" + scoreIndex} className="page-housingSingle-body-section__reviews-details-item">
                                                     <div className="page-housingSingle-body-section__reviews-details-item-name">
-                                                        <Typography variant="body">{capitalize(scoreName)}</Typography>
+                                                        <Typography variant="body1">{capitalize(scoreName)}</Typography>
                                                     </div>
                                                     <div className="page-housingSingle-body-section__reviews-details-item-value">
                                                         <div className="progress">
@@ -365,37 +392,44 @@ class PageHousingSingle extends React.Component{
                                     </div>
                                     <div className="page-housingSingle-body-section__reviews-comments">
                                         {
-                                            dataRatingComments.map((comment) => {
+                                            reviews ? reviews.map((comment) => {
 
                                                 return (
                                                     <div key={"comment-" + comment.id} className="page-housingSingle-body-section__reviews-comments-item">
                                                         <div className="page-housingSingle-body-section__reviews-comments-item-top">
                                                             <div className="page-housingSingle-body-section__reviews-comments-item-top-guest">
                                                                 <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__avatar">
-                                                                    <img src={comment.guest.avatar} alt={comment.guest.display_name}/>
+                                                                    <img src={comment.author.avatar} alt={GlobalUtils.renderUserDisplayName(comment.author)}/>
                                                                 </div>
                                                                 <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__right">
                                                                     <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__right__name">
-                                                                        <Typography component="span" variant="subtitle1">{comment.guest.display_name}</Typography>
+                                                                        <Typography component="span" variant="subtitle1">{comment.author.display_name}</Typography>
                                                                     </div>
                                                                     <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__right__date">
-                                                                        <Typography variant="subtitle1" component="span">{comment.posted_at.format("DD/MM/YYYY")}</Typography>
+                                                                        <Typography variant="subtitle1" component="span">
+                                                                            {moment(new Date(comment.posted_at)).format("DD MMMM YYYY")}
+                                                                        </Typography>
                                                                     </div>
                                                                 </div>
                                                             </div>
                                                             <div className="page-housingSingle-body-section__reviews-comments-item-top-score">
                                                                 <StarRounded color="secondary" className="page-housingSingle-body-section__reviews-comments-item-top-score__icon"/>
-                                                                <Typography className="page-housingSingle-body-section__reviews-comments-item-top-score__value" component="span" variant="h6">{comment.rating}</Typography>
+                                                                <Typography className="page-housingSingle-body-section__reviews-comments-item-top-score__value" component="span" variant="h6">{comment.score_total}</Typography>
                                                             </div>
                                                         </div>
-                                                        <div className="page-housingSingle-body-section__reviews-comments-item-body">
+                                                        {comment.comment && <div className="page-housingSingle-body-section__reviews-comments-item-body">
                                                             <Typography variant="body1">{comment.comment}</Typography>
-                                                        </div>
+                                                        </div>}
                                                     </div>
                                                 )
-                                            })
+                                            }) : (
+                                                <div style={{display: "flex", justifyContent: "center"}}>
+                                                    <CircularProgress color="primary"/>
+                                                </div>
+                                            )
                                         }
                                     </div>
+                                    {this.state.reviewsPagination && <Pagination onClick={this.handlePagination} {...this.state.reviewsPagination}/>}
                                 </React.Fragment>) : (
                                     <Skeleton variant="rect" height={200}/>
                                 )
@@ -419,8 +453,8 @@ const BodySection = withStyles(createStyles(theme => ({
     section__title: {
         marginBottom: 15
     }
-})))(({title, name, body, classes}) => (
-    <div id={name} className={"page-housingSingle-body-section page-housingSingle-body-section__" + name}>
+})))(({title, name, body, classes, sectionRef = null}) => (
+    <div ref={sectionRef} id={name} className={"page-housingSingle-body-section page-housingSingle-body-section__" + name}>
         <Typography variant="h5" className={classes.section__title}>{title}</Typography>
         <div className="page-housingSingle-body-section-body">
             {body}

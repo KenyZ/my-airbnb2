@@ -22,8 +22,8 @@ import ButtonAddFavorite from '../../shared/ButtonAddFavorite';
 import { withTheme } from '@material-ui/styles';
 import AppConstants from '../../utils/AppConstants';
 import GlobalUtils from '../../utils/GlobalUtils';
+import Pagination from '../../shared/pagination/pagination.index'
 
-const housingTags = ["2 guest", "1 bath", "1 kitchen", "Wifi"]
 
 const placeholderList = [{id: 0},{id: 1},{id: 2}]
 
@@ -45,9 +45,9 @@ class PageHousingList  extends React.Component{
         }
     }
 
-    componentDidMount(){
-
-        fetch(AppConstants.API_DOMAIN + "/housing")
+    // @OPTIMIZATION - should display page [1;infini] instead of [0;infini]
+    fetchHousingsList = (page = 0) => {
+        return fetch(AppConstants.API_DOMAIN + "/housing?offset=" + page)
         .then(res => res.json())
         .then(res => {
 
@@ -60,7 +60,38 @@ class PageHousingList  extends React.Component{
                 pagination: res.data.pagination,
             })
         })
+    }
 
+    componentDidUpdate(prevProps){
+
+
+        if(prevProps.location.search !== this.props.location.search){ // changing pagination
+            const nextPage = this.getCurrentPagination()
+
+            if(nextPage){ // retrieve next pagination
+                this.fetchHousingsList(nextPage).then(() => {
+                    window.scrollTo(0, 0)
+                })
+            }
+
+        }
+
+    }
+
+    componentDidMount(){
+        const nextPagination = this.getCurrentPagination()
+        this.fetchHousingsList(nextPagination)
+    }
+
+    // @OPTIMIZATION - should display page [1;infini] instead of [0;infini]
+    getCurrentPagination = () => new URLSearchParams(this.props.location.search).get("page")
+
+    handlePagination = page => {
+    // @OPTIMIZATION - should display page [1;infini] instead of [0;infini]
+        this.props.history.push({
+            path: this.props.location.pathname,
+            search: "?page=" + page 
+        })
     }
     
     render(){
@@ -111,6 +142,7 @@ class PageHousingList  extends React.Component{
                         })
                     }
                 </div>
+                {this.state.pagination && <Pagination onClick={this.handlePagination} {...this.state.pagination}/>}
             </div>
         )
     }
