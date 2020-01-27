@@ -80,7 +80,7 @@ class PageHousingList  extends React.Component{
 
     componentDidMount(){
         const nextPagination = this.getCurrentPagination()
-        this.fetchHousingsList(nextPagination)
+        this.fetchHousingsList(nextPagination || 0)
     }
 
     // @OPTIMIZATION - should display page [1;infini] instead of [0;infini]

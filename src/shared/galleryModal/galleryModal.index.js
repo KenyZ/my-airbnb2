@@ -79,6 +79,8 @@ class GalleryModal extends React.Component{
 
     render(){
 
+        console.log({images: this.props.images})
+
         const classes = this.props.classes
         return(
             <Dialog
@@ -94,7 +96,7 @@ class GalleryModal extends React.Component{
 
                         <div className="ModalGallery-gallery-main">
                             <Carousel
-                                images={this.props.images}
+                                images={this.props.images.map(img => img.url)}
                                 carouselRef={this.setRefAndState("mainCarousel")}
                                 SlickProps={{
                                     asNavFor: this.state.previewCarousel,
@@ -103,21 +105,23 @@ class GalleryModal extends React.Component{
                                     arrows: true,
                                     prevArrow: <CustomArrowPrev/>,
                                     nextArrow: <CustomArrowNext/>,
-                                    initialSlide: this.props.startAt
+                                    initialSlide: this.props.startAt,
+                                    lazyLoad: false,
                                 }}
                             />
                         </div>
 
                         <div className="ModalGallery-gallery-preview">
                             <Carousel
-                                images={this.props.images}
+                                images={this.props.images.map(img => img.url)}
                                 carouselRef={this.setRefAndState("previewCarousel")}
                                 SlickProps={{
                                     asNavFor: this.state.mainCarousel,
                                     slidesToShow: 5,
                                     dots: false,
                                     focusOnSelect: true,
-                                    initialSlide: this.props.startAt
+                                    initialSlide: this.props.startAt,
+                                    lazyLoad: false,
                                 }}
                             />
                         </div>

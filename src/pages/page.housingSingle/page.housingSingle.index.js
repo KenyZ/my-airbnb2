@@ -307,7 +307,11 @@ class PageHousingSingle extends React.Component{
                         </div>
 
                         <div className="page-housingSingle-body-row">
-                            <span className="page-housingSingle-body-location">Paris</span>
+                            <span className="page-housingSingle-body-location">
+                                {housing ? housing.location_country : (
+                                    <Skeleton variant="text"/>
+                                )}
+                            </span>
                             <div className="page-housingSingle-body-host">
                                 <div className="page-housingSingle-body-host-avatar">
                                     {housing ?( <img src={housing.host.avatar} alt=""/>) : (

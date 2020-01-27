@@ -53,8 +53,10 @@ class Carousel extends React.Component {
                     className="Carousel"
                     ref={this.props.carouselRef}
                     afterChange={this._afterChange}
-                    lazyLoad={this.props.lazyLoad}
-                    {...this.props.SlickProps}
+                    {...{
+                        lazyLoad: true,
+                        ...this.props.SlickProps,
+                    }}
 
                 >{
                     this.props.images.map((image, imageIndex) => (
@@ -86,7 +88,6 @@ class Carousel extends React.Component {
 
 Carousel.defaultProps = {
     SlickProps: {},
-    lazyLoad: true,
     images: []
 }
 
