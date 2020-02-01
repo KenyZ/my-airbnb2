@@ -48,6 +48,8 @@ module.exports = (sequelize, DataTypes) => {
     // Methods
 
     const HousingReview = sequelize.import("./HousingReview.js")
+    const Op = require('sequelize').Op
+    const moment = require('moment')
 
     Housing.getAll = async (limit = 5, offset = 0) => {
 
@@ -188,7 +190,7 @@ module.exports = (sequelize, DataTypes) => {
             }
         } else {
             response.status = 404
-            response.error = {message: "no housing found"}
+            response.error = {message: "NOT FOUND - no housing found"}
         }
 
         return response
@@ -261,9 +263,69 @@ module.exports = (sequelize, DataTypes) => {
             }
         } else {
             response.status = 404
-            response.error = {message: "no housing found"}
+            response.error = {message: "NOT FOUND - no housing found"}
         }
         
+        return response
+    }
+    
+    /**
+     * @param {string} month - range is [0, 11]
+     * @param {string} year - i.e 2020
+     */
+    Housing.getBookings = async (housingId = null, month, year) => {
+
+        const response = {
+            error: false,
+            status: 200,
+            data: null,
+        }
+
+        let _month = (month && Number(month)) || undefined
+        let _year = (year && Number(year)) || undefined
+
+        if(month && year){
+
+            const inThisMonth = [
+                moment(),
+                moment().month(_month).year(_year).endOf('month'),
+            ]
+
+            const bookings = await Housing.findByPk(housingId, {
+                attributes: ["id"],
+                include: [
+                    {
+                        association: "bookings",
+                        attributes: ["id"],
+                        through: {
+                            attributes: ["checkin", "checkout"],
+                            where: {
+                                [Op.or]: {
+                                    checkin: {
+                                        [Op.between]: inThisMonth
+                                    },
+                                    checkout: {
+                                        [Op.between]: inThisMonth
+                                    },
+                                }
+                            }
+                        }
+                    }
+                ]
+            })
+    
+            if(bookings){
+                response.data = bookings.get("bookings").map(guest => guest.get("booking"))
+            } else {
+                response.status = 404
+                response.error = {message: "NOT FOUND - no housing found"}
+            }
+        } else {
+            response.status = 400
+            response.error = {message: "BAD REQUEST - month or year is invalid"}
+        }
+
+
         return response
     }
 

@@ -70,6 +70,33 @@ app.get("/housing/:id/reviews", async (req, res) => {
     return res.status(response.status).send(response)
 })
 
+app.get("/housing/:id/bookings", async (req, res) => {
+
+    // params
+    const housingId = (req.params.id && Number(req.params.id)) || null
+
+    // query
+    const month = (req.query.month && Number(req.query.month)) || undefined
+    const year = (req.query.year && Number(req.query.year)) || undefined
+
+    //response
+    const response = await Housing.getBookings(housingId, month, year)
+
+    return res.status(response.status).send(response)
+})
+
+
+// app.patch("/housing/:id/favorite", async (req, res) => {
+
+//     // params
+//     const housingId = (req.params.id && Number(req.params.id)) || null
+
+//     //response
+//     const response = await Housing.getBookings(housingId, month, year)
+
+//     return res.status(response.status).send(response)
+// })
+
 
 app.listen(PORT, () => console.log(`API launched on PORT=${PORT}`))
 

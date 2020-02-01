@@ -78,9 +78,6 @@ class GalleryModal extends React.Component{
     }
 
     render(){
-
-        console.log({images: this.props.images})
-
         const classes = this.props.classes
         return(
             <Dialog

@@ -7,9 +7,10 @@ import {
 import { Button, Dialog, DialogContent, IconButton, Typography, CircularProgress } from '@material-ui/core';
 import {CloseRounded} from '@material-ui/icons'
 import { withStyles, createStyles, withTheme } from '@material-ui/styles';
-import { DatePicker } from '@material-ui/pickers';
+import { DatePicker, Day } from '@material-ui/pickers';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
+
 
 // Components
 import widthWindowWidth from '../../shared/widthWindowWidth';
@@ -26,7 +27,6 @@ import GlobalUtils from '../../utils/GlobalUtils';
 import AppConstants from '../../utils/AppConstants';
 
 
-
 const capitalize = (s) => {
     if (typeof s !== 'string') return ''
     return s.charAt(0).toUpperCase() + s.slice(1)
@@ -34,6 +34,48 @@ const capitalize = (s) => {
 
 
 const styles = theme => createStyles({
+
+    dayWrapper: {
+        position: "relative",
+      },
+      day: {
+        width: 36,
+        height: 36,
+        fontSize: theme.typography.caption.fontSize,
+        margin: "0 2px",
+        color: "inherit",
+      },
+      customDayHighlight: {
+        position: "absolute",
+        top: 0,
+        bottom: 0,
+        left: "2px",
+        right: "2px",
+        border: `1px solid ${theme.palette.secondary.main}`,
+        borderRadius: "50%",
+      },
+      nonCurrentMonthDay: {
+        color: theme.palette.text.disabled,
+      },
+      highlightNonCurrentMonthDay: {
+        color: "#676767",
+      },
+      highlight: {
+        background: theme.palette.primary.main,
+        color: theme.palette.common.white,
+      },
+      firstHighlight: {
+        extend: "highlight",
+        borderTopLeftRadius: "50%",
+        borderBottomLeftRadius: "50%",
+      },
+      endHighlight: {
+        extend: "highlight",
+        borderTopRightRadius: "50%",
+        borderBottomRightRadius: "50%",
+      },
+
+
     viewPhotosBtn__root: {
         position: "absolute",
         right: 15,
@@ -77,7 +119,10 @@ class PageHousingSingle extends React.Component{
             formData: {
                 checkin: null,
                 chekout: null,
+                booking: null
             },
+
+            focusedDateInput: null,
 
             housing: null,
 
@@ -155,6 +200,30 @@ class PageHousingSingle extends React.Component{
         })
     }
 
+    renderCalendarDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => {
+
+
+        return dayComponent;
+
+        // const today = moment()
+        // const isUnderMinDate = today.diff(day) > 0
+
+        // const isSelected = this.state.formData.checkin && (day.format("DD-MM-YYYY") === this.state.formData.checkin.format("DD-MM-YYY"))|| (this.state.formData.checkout && day.format("DD-MM-YYYY") === this.state.formData.checkout.format("DD-MM-YYY"))
+        // const isDisabled = isUnderMinDate
+
+        
+
+        // return <Day foo={{isSelected, isDisabled}} selected={!isDisabled && isSelected} disabled={isDisabled}>{day.format("DD")}</Day>
+
+        // return (
+        //     <div className={this.props.classes.wrapperClassName}>
+        //         <IconButton className={this.props.classes.dayClassName}>
+        //             <span> {day.format("DD")} </span>
+        //         </IconButton>
+        //     </div>
+        // )
+    }
+
     render(){
 
         const {classes} = this.props
@@ -172,6 +241,7 @@ class PageHousingSingle extends React.Component{
                     <div className="page-housingSingle-bookingCta-datepickers">
                         {housing ? (
                             <React.Fragment>
+                                
                                 <DatePicker
                                     disableToolbar
                                     variant="inline"
@@ -181,8 +251,9 @@ class PageHousingSingle extends React.Component{
                                     value={this.state.formData.checkin}
                                     onChange={this.handleDateChange("checkin")}
                                     fullWidth
-                                    inputVariant="outlined"
+                                    inputVariant="outlined"     
 
+                                    renderDay={this.renderCalendarDay}
                                 />
                                 <DatePicker
                                     disableToolbar
@@ -214,6 +285,8 @@ class PageHousingSingle extends React.Component{
                     )}
                 </div>
         )
+
+
         return (
             <div className="page page-housingSingle">
                 <div className="page-housingSingle-mobileBookingCta">
