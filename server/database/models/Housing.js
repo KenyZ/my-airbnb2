@@ -315,7 +315,11 @@ module.exports = (sequelize, DataTypes) => {
             })
     
             if(bookings){
-                response.data = bookings.get("bookings").map(guest => guest.get("booking"))
+                response.data = {
+                    month: month,
+                    year: year,
+                    list: bookings.get("bookings").map(guest => guest.get("booking"))
+                }
             } else {
                 response.status = 404
                 response.error = {message: "NOT FOUND - no housing found"}

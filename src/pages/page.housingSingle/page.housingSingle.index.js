@@ -7,10 +7,8 @@ import {
 import { Button, Dialog, DialogContent, IconButton, Typography, CircularProgress } from '@material-ui/core';
 import {CloseRounded} from '@material-ui/icons'
 import { withStyles, createStyles, withTheme } from '@material-ui/styles';
-import { DatePicker, Day } from '@material-ui/pickers';
 import Skeleton from '@material-ui/lab/Skeleton';
 import moment from 'moment';
-
 
 // Components
 import widthWindowWidth from '../../shared/widthWindowWidth';
@@ -25,6 +23,9 @@ import './page.housingSingle.scss'
 // Utils
 import GlobalUtils from '../../utils/GlobalUtils';
 import AppConstants from '../../utils/AppConstants';
+import DateRangePicker from '../../shared/DateRangePicker';
+
+
 
 
 const capitalize = (s) => {
@@ -118,16 +119,23 @@ class PageHousingSingle extends React.Component{
 
             formData: {
                 checkin: null,
-                chekout: null,
+                checkout: null,
                 booking: null
             },
 
-            focusedDateInput: null,
+            checkinCalendarMonth: moment().format("MM"),
+            checkinCalendarYear: moment().format("YYYY"),
+            checkoutCalendarMonth: moment().format("MM"),
+            checkoutCalendarYear: moment().format("YYYY"),
 
             housing: null,
 
             reviews: null,
-            reviewsPagination: null
+            reviewsPagination: null,
+
+            bookings: [],
+
+            foobar: "hello"
         }
 
         this.reviewsSectionRef = React.createRef()
@@ -137,7 +145,7 @@ class PageHousingSingle extends React.Component{
 
         const housingId = this.props.match.params.id
 
-        return fetch(AppConstants.API_DOMAIN + "/housing/" + housingId + "/reviews?offset=" + page)
+        return fetch(AppConstants.API_DOMAIN + "/housing/" + housingId + "/review?offset=" + page)
         .then(res => res.json())
         .then(res => {
 
@@ -149,6 +157,29 @@ class PageHousingSingle extends React.Component{
                 reviews: res.data.list,
                 reviewsPagination: res.data.pagination
             })
+        })
+    }
+
+    fetchHousingBookings = (month, year) => {
+
+        const housingId = this.props.match.params.id
+
+        return fetch(AppConstants.API_DOMAIN + "/housing/" + housingId + "/booking?month=" + month + "&year=" + year)
+        .then(res => res.json())
+        .then(res => {
+
+            // if(res.error){
+            //     return
+            // }
+
+            // const month = res.data.month
+            // const year = res.data.year
+
+            // this.setState({
+            //     bookings: res.data.list
+            // })
+
+            return res
         })
     }
 
@@ -173,6 +204,9 @@ class PageHousingSingle extends React.Component{
 
             // Fetch reviews
             this.fetchHousingReviews(0)
+            // Fetching bookings
+            const today = moment()
+            this.fetchHousingBookings(today.month(), today.year())
         } else {
             console.error("No id matched")
             // go to 404
@@ -184,6 +218,14 @@ class PageHousingSingle extends React.Component{
         this.setState({galleryModalIsOpen: false})
     }
 
+
+    handlePagination = page => {
+        this.fetchHousingReviews(page).then(() => {
+            const reviewsAnchor = this.reviewsSectionRef
+            window.scrollTo(0, reviewsAnchor.current.offsetTop)
+        })
+    }
+
     handleDateChange = name => nextDate => {
         this.setState({
             formData: {
@@ -193,35 +235,31 @@ class PageHousingSingle extends React.Component{
         })
     }
 
-    handlePagination = page => {
-        this.fetchHousingReviews(page).then(() => {
-            const reviewsAnchor = this.reviewsSectionRef
-            window.scrollTo(0, reviewsAnchor.current.offsetTop)
+    onMonthOrYearChange = (monthOrYear, checkinOrCheckout) => async date => {
+
+        const month = date.month()
+        const year = date.year()
+
+        console.log("before")
+
+        return new Promise((resolve, reject) => {
+            this.fetchHousingBookings(month, year)
+            .then(res => {
+
+                this.setState({foobar: this.state.foobar + "my"})
+                resolve()
+                // console.log("after")
+    
+                // if(monthOrYear === "month"){
+                //     this.setState({[checkinOrCheckout + "CalendarMonth"]: date.format("MM")})
+                // }
+                // else if(monthOrYear === "year"){
+                //     this.setState({[checkinOrCheckout + "CalendarYear"]: date.format("YYYY")})
+                // }
+            })
+            .catch(reject)
         })
-    }
 
-    renderCalendarDay = (day, selectedDate, dayInCurrentMonth, dayComponent) => {
-
-
-        return dayComponent;
-
-        // const today = moment()
-        // const isUnderMinDate = today.diff(day) > 0
-
-        // const isSelected = this.state.formData.checkin && (day.format("DD-MM-YYYY") === this.state.formData.checkin.format("DD-MM-YYY"))|| (this.state.formData.checkout && day.format("DD-MM-YYYY") === this.state.formData.checkout.format("DD-MM-YYY"))
-        // const isDisabled = isUnderMinDate
-
-        
-
-        // return <Day foo={{isSelected, isDisabled}} selected={!isDisabled && isSelected} disabled={isDisabled}>{day.format("DD")}</Day>
-
-        // return (
-        //     <div className={this.props.classes.wrapperClassName}>
-        //         <IconButton className={this.props.classes.dayClassName}>
-        //             <span> {day.format("DD")} </span>
-        //         </IconButton>
-        //     </div>
-        // )
     }
 
     render(){
@@ -240,31 +278,16 @@ class PageHousingSingle extends React.Component{
                     <div className="hr"/>
                     <div className="page-housingSingle-bookingCta-datepickers">
                         {housing ? (
-                            <React.Fragment>
-                                
-                                <DatePicker
-                                    disableToolbar
-                                    variant="inline"
-                                    format="MM/DD/YYYY"
-                                    margin="normal"
-                                    label="Checkin"
-                                    value={this.state.formData.checkin}
-                                    onChange={this.handleDateChange("checkin")}
-                                    fullWidth
-                                    inputVariant="outlined"     
+                            <React.Fragment>                               
+                                <DateRangePicker
+                                    checkin={this.state.formData.checkin}
+                                    checkout={this.state.formData.checkout}
+                                    handleDateChange={this.handleDateChange}
+                                    onMonthOrYearChange={this.onMonthOrYearChange}
+                                    bookings={this.state.bookings}
+                                    DatePickerProps={{
 
-                                    renderDay={this.renderCalendarDay}
-                                />
-                                <DatePicker
-                                    disableToolbar
-                                    variant="inline"
-                                    format="MM/DD/YYYY"
-                                    margin="normal"
-                                    label="Checkout"
-                                    value={this.state.formData.checkout}
-                                    onChange={this.handleDateChange("checkout")}
-                                    fullWidth   
-                                    inputVariant="outlined"
+                                    }}
                                 />
                             </React.Fragment>
                         ) : (
@@ -298,7 +321,7 @@ class PageHousingSingle extends React.Component{
                         onClick={() => this.setState({openBookingDialog: true})}
                     >Add dates</Button>
                     <Dialog
-                        open={this.state.openBookingDialog}
+                        open={true || this.state.openBookingDialog}
                         fullScreen
                     >
                         <DialogContent>

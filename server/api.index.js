@@ -21,7 +21,7 @@ const PORT = 3002
 
 app.use((req, res, next) => {
     res.set({
-        "Access-Control-Allow-Origin": "http://localhost:3000"
+        "Access-Control-Allow-Origin": "http://localhost:3000" // quick fix !!!
     })
     next()
 })
@@ -56,7 +56,7 @@ app.get("/housing/:id", async (req, res) => {
     return res.status(response.status).send(response)
 })
 
-app.get("/housing/:id/reviews", async (req, res) => {
+app.get("/housing/:id/review", async (req, res) => {
 
     // params
     const housingId = (req.params.id && Number(req.params.id)) || null
@@ -70,7 +70,7 @@ app.get("/housing/:id/reviews", async (req, res) => {
     return res.status(response.status).send(response)
 })
 
-app.get("/housing/:id/bookings", async (req, res) => {
+app.get("/housing/:id/booking", async (req, res) => {
 
     // params
     const housingId = (req.params.id && Number(req.params.id)) || null

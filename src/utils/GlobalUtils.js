@@ -9,8 +9,7 @@ export default {
     
         return className
     },
-
-
+    
     renderHousingTags: housing => {
         return [
             housing.info_guest + " guests",
