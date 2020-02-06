@@ -6,6 +6,7 @@ import clsx from 'clsx'
 import PropTypes from 'prop-types'
 import { withStyles, createStyles} from '@material-ui/styles';
 
+
 const _Utils = {
     isWithinRange: (date, start, end) => (date.diff(start) >= 0 && end.diff(date) >= 0)
 }
@@ -60,6 +61,24 @@ const styles = createStyles(theme => ({
 
 }))
 
+
+const MyDatePicker = (props) => {
+
+    console.log("rendered")
+
+    React.useEffect(() => {
+        console.log("ON MOUNTED")
+
+        return () => {
+            console.log("ON UNMOUNTED ####")
+        }
+    }, [])
+
+    return (
+        <DatePicker {...props}/>
+    )
+} 
+
 class DateRangePicker extends React.Component{
 
     constructor(props){
@@ -91,6 +110,8 @@ class DateRangePicker extends React.Component{
 
     renderCalendarDay = (day, selectedDate, isInCurrentMonth, dayComponent) => {
 
+
+        console.log('process rendering dayWrapper')
 
         const checkin = this.state.checkinCalendarHoveredDay ? this.state.checkinCalendarHoveredDay : this.props.checkin
         const checkout = this.state.checkoutCalendarHoveredDay ? this.state.checkoutCalendarHoveredDay : this.props.checkout
@@ -137,8 +158,9 @@ class DateRangePicker extends React.Component{
         return dayComponent
     }
 
-
     onChange = key => date => {
+
+        console.log("in the onChange()")
 
         const today = moment()
 
@@ -165,7 +187,7 @@ class DateRangePicker extends React.Component{
         return (
             <React.Fragment>
                 <DatePicker
-                    disableToolbar
+                    // disableToolbar
                     variant="inline"
                     format="MM/DD/YYYY"
                     margin="normal"
@@ -175,15 +197,15 @@ class DateRangePicker extends React.Component{
                     fullWidth
                     inputVariant="outlined"
 
-                    onOpen={() => this.setState({openedCalendar: "checkin"})}
+                    onOpen={() => {this.setState({openedCalendar: "checkin"})}}
 
-                    onMonthChange={this.props.onMonthOrYearChange("month", "checkin")}
-                    onYearChange={this.props.onMonthOrYearChange("year", "checkin")}
+                    onMonthChange={this.props.onMonthOrYearChange}
+                    onYearChange={this.props.onMonthOrYearChange}
                     renderDay={this.renderCalendarDay}
                     {...this.props.DatePickerProps}
                 />
                 <DatePicker
-                    disableToolbar
+                    // disableToolbar
                     variant="inline"
                     format="MM/DD/YYYY"
                     margin="normal"
@@ -195,8 +217,8 @@ class DateRangePicker extends React.Component{
                     
                     onOpen={() => this.setState({openedCalendar: "checkout"})}
                     
-                    onMonthChange={this.props.onMonthOrYearChange("month", "checkout")}
-                    onYearChange={this.props.onMonthOrYearChange("year", "checkout")}
+                    onMonthChange={this.props.onMonthOrYearChange}
+                    onYearChange={this.props.onMonthOrYearChange}
                     renderDay={this.renderCalendarDay}
                     {...this.props.DatePickerProps}
                 />

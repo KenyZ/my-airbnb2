@@ -26,6 +26,9 @@ import AppConstants from '../../utils/AppConstants';
 import DateRangePicker from '../../shared/DateRangePicker';
 
 
+import {DatePicker, Day} from '@material-ui/pickers'
+
+
 
 
 const capitalize = (s) => {
@@ -168,22 +171,24 @@ class PageHousingSingle extends React.Component{
         .then(res => res.json())
         .then(res => {
 
-            // if(res.error){
-            //     return
-            // }
+            if(res.error){
+                return
+            }
 
-            // const month = res.data.month
-            // const year = res.data.year
+            const month = res.data.month
+            const year = res.data.year
 
-            // this.setState({
-            //     bookings: res.data.list
-            // })
+            this.setState({
+                bookings: res.data.list
+            })
 
             return res
         })
     }
 
     componentDidMount(){
+        window.onMonthOrYearChange = this.onMonthOrYearChange
+        window.moment = moment
         const housingId = this.props.match.params.id
 
         if(housingId){
@@ -235,31 +240,32 @@ class PageHousingSingle extends React.Component{
         })
     }
 
-    onMonthOrYearChange = (monthOrYear, checkinOrCheckout) => async date => {
+    // onMonthOrYearChange = async () => {
+    //     // just select random days to simulate server side based data
+    //     return new Promise(resolve => {
+    //       setTimeout(() => {
+
+    //         this.setState({bookings: [
+    //             ...this.state.bookings
+    //         ]}, () => {
+    //             resolve()
+    //         })
+    //       }, 1000);
+    //     });
+    // }
+
+    onMonthOrYearChange = async date => {
 
         const month = date.month()
         const year = date.year()
 
-        console.log("before")
-
-        return new Promise((resolve, reject) => {
-            this.fetchHousingBookings(month, year)
-            .then(res => {
-
-                this.setState({foobar: this.state.foobar + "my"})
-                resolve()
-                // console.log("after")
-    
-                // if(monthOrYear === "month"){
-                //     this.setState({[checkinOrCheckout + "CalendarMonth"]: date.format("MM")})
-                // }
-                // else if(monthOrYear === "year"){
-                //     this.setState({[checkinOrCheckout + "CalendarYear"]: date.format("YYYY")})
-                // }
-            })
-            .catch(reject)
+        return this.fetchHousingBookings(month, year)
+        .then(res => {
+            console.log("has resolve")
         })
-
+        .catch(err => {
+            console.log("has failed")
+        })
     }
 
     render(){
@@ -278,7 +284,7 @@ class PageHousingSingle extends React.Component{
                     <div className="hr"/>
                     <div className="page-housingSingle-bookingCta-datepickers">
                         {housing ? (
-                            <React.Fragment>                               
+                            <React.Fragment>                              
                                 <DateRangePicker
                                     checkin={this.state.formData.checkin}
                                     checkout={this.state.formData.checkout}

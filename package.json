@@ -18,6 +18,7 @@
     "express": "^4.17.1",
     "faker": "^4.1.0",
     "material-ui-datetime-range-picker": "^1.0.0",
+    "material-ui-pickers": "2.0.0",
     "moment": "^2.24.0",
     "mysql2": "^2.1.0",
     "node-sass": "^4.13.1",
