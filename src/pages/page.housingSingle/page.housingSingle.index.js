@@ -26,11 +26,6 @@ import AppConstants from '../../utils/AppConstants';
 import DateRangePicker from '../../shared/DateRangePicker';
 
 
-import {DatePicker, Day} from '@material-ui/pickers'
-
-
-
-
 const capitalize = (s) => {
     if (typeof s !== 'string') return ''
     return s.charAt(0).toUpperCase() + s.slice(1)
@@ -163,11 +158,11 @@ class PageHousingSingle extends React.Component{
         })
     }
 
-    fetchHousingBookings = (month, year) => {
+    fetchHousingBookings = date => {
 
         const housingId = this.props.match.params.id
 
-        return fetch(AppConstants.API_DOMAIN + "/housing/" + housingId + "/booking?month=" + month + "&year=" + year)
+        return fetch(AppConstants.API_DOMAIN + "/housing/" + housingId + "/booking?month=" + date.format("MMM") + "&year=" + date.format("YYYY"))
         .then(res => res.json())
         .then(res => {
 
@@ -210,8 +205,7 @@ class PageHousingSingle extends React.Component{
             // Fetch reviews
             this.fetchHousingReviews(0)
             // Fetching bookings
-            const today = moment()
-            this.fetchHousingBookings(today.month(), today.year())
+            this.fetchHousingBookings(moment())
         } else {
             console.error("No id matched")
             // go to 404
@@ -240,32 +234,21 @@ class PageHousingSingle extends React.Component{
         })
     }
 
-    // onMonthOrYearChange = async () => {
-    //     // just select random days to simulate server side based data
-    //     return new Promise(resolve => {
-    //       setTimeout(() => {
-
-    //         this.setState({bookings: [
-    //             ...this.state.bookings
-    //         ]}, () => {
-    //             resolve()
-    //         })
-    //       }, 1000);
-    //     });
-    // }
-
     onMonthOrYearChange = async date => {
+        
+        return new Promise((resolve, reject) => {
 
-        const month = date.month()
-        const year = date.year()
-
-        return this.fetchHousingBookings(month, year)
-        .then(res => {
-            console.log("has resolve")
-        })
-        .catch(err => {
-            console.log("has failed")
-        })
+            this.fetchHousingBookings(date)
+                .then(res => {
+                    console.log("has resolve")
+                    resolve(res)
+                })
+                .catch(err => {
+                    console.log("has failed")
+                    reject(err)
+                })
+                
+            })
     }
 
     render(){
@@ -274,47 +257,6 @@ class PageHousingSingle extends React.Component{
 
         const housing = this.state.housing
         const reviews = this.state.reviews
-
-        const BookingCtaContainer = ({isMobile = false}) => (
-            <div className={`page-housingSingle-bookingCta ${isMobile ? "page-housingSingle-bookingCta__mobile" : ""}`}>
-                    <div className="page-housingSingle-bookingCta-heading">
-                        {housing && <Typography variant="h6">Add dates for prices</Typography>}
-                        {!housing && <Skeleton variant="text"/>}
-                    </div>
-                    <div className="hr"/>
-                    <div className="page-housingSingle-bookingCta-datepickers">
-                        {housing ? (
-                            <React.Fragment>                              
-                                <DateRangePicker
-                                    checkin={this.state.formData.checkin}
-                                    checkout={this.state.formData.checkout}
-                                    handleDateChange={this.handleDateChange}
-                                    onMonthOrYearChange={this.onMonthOrYearChange}
-                                    bookings={this.state.bookings}
-                                    DatePickerProps={{
-
-                                    }}
-                                />
-                            </React.Fragment>
-                        ) : (
-                            <React.Fragment>
-                                <Skeleton variant="rect" style={{marginBottom: 15}}/>
-                                <Skeleton variant="rect" style={{marginBottom: 15}}/>
-                            </React.Fragment>
-                        )}
-                    </div>
-                    {housing ? (<Button
-                        variant="contained"
-                        color="primary"
-                        size="large"
-                        fullWidth
-                        classes={{root: classes.bookingCta__btn}}
-                    >Book</Button>) : (
-                        <Skeleton variant="rect" height={40}/>
-                    )}
-                </div>
-        )
-
 
         return (
             <div className="page page-housingSingle">
@@ -327,14 +269,14 @@ class PageHousingSingle extends React.Component{
                         onClick={() => this.setState({openBookingDialog: true})}
                     >Add dates</Button>
                     <Dialog
-                        open={true || this.state.openBookingDialog}
+                        open={this.state.openBookingDialog}
                         fullScreen
                     >
                         <DialogContent>
                             <IconButton onClick={() => this.setState({openBookingDialog: false})} classes={{root: classes.closeModalBtn}}>
                                 <CloseRounded/>
                             </IconButton>
-                            <BookingCtaContainer isMobile={true}/>
+                            <BookingCtaContainer bookings={this.state.bookings} formData={this.state.formData} handleDateChange={this.handleDateChange} onMonthChange={this.onMonthOrYearChange} housing={housing} classes={classes} isMobile={true}/>
                         </DialogContent>
                     </Dialog>
                 </div>
@@ -545,7 +487,7 @@ class PageHousingSingle extends React.Component{
                     
 
                     <div className="page-housingSingle-aside">
-                        <BookingCtaContainer/>
+                        <BookingCtaContainer bookings={this.state.bookings} formData={this.state.formData} handleDateChange={this.handleDateChange} onMonthChange={this.onMonthOrYearChange} classes={classes} housing={housing}/>
                     </div>
                 </div>
                 
@@ -553,6 +495,46 @@ class PageHousingSingle extends React.Component{
         )
     }
 }
+
+const BookingCtaContainer = ({housing, bookings, classes, onMonthChange, handleDateChange, formData, isMobile = false}) => (
+    <div className={`page-housingSingle-bookingCta ${isMobile ? "page-housingSingle-bookingCta__mobile" : ""}`}>
+            <div className="page-housingSingle-bookingCta-heading">
+                {housing && <Typography variant="h6">Add dates for prices</Typography>}
+                {!housing && <Skeleton variant="text"/>}
+            </div>
+            <div className="hr"/>
+            <div className="page-housingSingle-bookingCta-datepickers">
+                {housing ? (
+                    <React.Fragment>                         
+                        <DateRangePicker
+                            checkin={formData.checkin}
+                            checkout={formData.checkout}
+                            handleDateChange={handleDateChange}
+                            onMonthOrYearChange={onMonthChange}
+                            bookings={bookings}
+                            DatePickerProps={{
+
+                            }}
+                        />
+                    </React.Fragment>
+                ) : (
+                    <React.Fragment>
+                        <Skeleton variant="rect" style={{marginBottom: 15}}/>
+                        <Skeleton variant="rect" style={{marginBottom: 15}}/>
+                    </React.Fragment>
+                )}
+            </div>
+            {housing ? (<Button
+                variant="contained"
+                color="primary"
+                size="large"
+                fullWidth
+                classes={{root: classes.bookingCta__btn}}
+            >Book</Button>) : (
+                <Skeleton variant="rect" height={40}/>
+            )}
+        </div>
+)
 
 
 const BodySection = withStyles(createStyles(theme => ({

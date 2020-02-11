@@ -281,13 +281,14 @@ module.exports = (sequelize, DataTypes) => {
             data: null,
         }
 
-        let _month = (month && Number(month)) || undefined
+        // OPTI - useless?
+        let _month = month || undefined
         let _year = (year && Number(year)) || undefined
 
         if(month && year){
 
             const inThisMonth = [
-                moment(),
+                moment().month(_month).year(_year).startOf("month"),
                 moment().month(_month).year(_year).endOf('month'),
             ]
 

@@ -76,7 +76,7 @@ app.get("/housing/:id/booking", async (req, res) => {
     const housingId = (req.params.id && Number(req.params.id)) || null
 
     // query
-    const month = (req.query.month && Number(req.query.month)) || undefined
+    const month = req.query.month || undefined
     const year = (req.query.year && Number(req.query.year)) || undefined
 
     //response

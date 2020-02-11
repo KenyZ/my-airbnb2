@@ -47,7 +47,7 @@ async function generateDumpData(){
             last_name: _lastName,
             password: "1234",
             avatar: faker.internet.avatar(),
-            user_role: Math.random() > .62 ? USERS_ROLE[1] : USERS_ROLE[0],
+            user_role: Math.random() > .5 ? USERS_ROLE[0] : USERS_ROLE[1],
         }
     }))
 
@@ -108,8 +108,8 @@ async function generateDumpData(){
 
         const bookings = await sequelize.models.Booking.bulkCreate(guestsItemRentedHousings.map(h => {
 
-            const checkin = moment().subtract(faker.random.number(30 * (Math.random() > .5 ? -1 : 1)), "day")
-            const checkout = checkin.clone().add(faker.random.number(16) + 4, "day")
+            const checkin = moment().subtract(faker.random.number(120 * (Math.random() > .5 ? -1 : 1)), "day")
+            const checkout = checkin.clone().add(faker.random.number(8) + 2, "day")
 
             return {
                 checkin: checkin.format("YYYY-MM-DD HH:mm:ss"),
