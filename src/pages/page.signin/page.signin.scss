@@ -1,0 +1,32 @@
+@import "../../styles/helpers/mixins.scss";
+
+.page-signin{
+    padding-top: 0;
+    background-color: #3f51b5;
+    height: 100vh;
+    padding: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    &-form{
+        background-color: #fff;
+        padding: 25px 20px;
+        border-radius: 6px;
+        max-width: 500px;
+        width: 100%;
+        margin: 0 auto;
+
+        &-title{
+            text-align: center;
+            margin-bottom: 15px;
+        }
+    }
+
+    @include desktop{
+        &-form{
+            padding: 35px 40px;
+        }
+    }
+    
+}

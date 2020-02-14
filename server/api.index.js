@@ -10,10 +10,12 @@ const {
     User
 } = sequelize.models
 
+const jwt = require("jsonwebtoken")
 const express = require('express')
 const app = express()
 
 const PORT = 3002
+const TOKEN_ACCESS_EXPIRY = "6h"
 
 /**
  * INIT API
@@ -21,10 +23,13 @@ const PORT = 3002
 
 app.use((req, res, next) => {
     res.set({
-        "Access-Control-Allow-Origin": "http://localhost:3000" // quick fix !!!
+        "Access-Control-Allow-Origin": "http://localhost:3000",
+        "Access-Control-Allow-Headers": "Content-Type"
     })
     next()
 })
+
+app.use(express.json())
 
 /**
  * ROUTES
@@ -32,6 +37,37 @@ app.use((req, res, next) => {
 
 app.get("/", async (req, res) => {
     return res.send({api_running: true})
+})
+
+app.post("/auth/signin", async (req, res) => {
+
+    let results = {
+        error: false,
+        status: 200,
+        data: null,
+    }
+
+    const email = req.body.email || null
+    const password = req.body.password || null
+
+    const loginResults = await User.login(email, password)
+    results = {
+        ...loginResults
+    }  
+
+    if(loginResults.data){
+        const token_access = jwt.sign({
+            id: loginResults.data.id
+        }, process.env.API_SECRET, {
+            expiresIn: TOKEN_ACCESS_EXPIRY
+        })
+
+        results.data = {
+            token_access: token_access
+        }
+    }
+
+    return res.status(results.status).send(results)
 })
 
 app.get("/housing", async (req, res) => {
