@@ -4,11 +4,13 @@ import {
     Toolbar, 
     Typography, 
     IconButton,
-    InputBase,
+    Button,
 } from '@material-ui/core'
-import { SearchOutlined, Menu} from '@material-ui/icons'
+import { Menu} from '@material-ui/icons'
 import { makeStyles, fade } from '@material-ui/core/styles'
 import {Link} from 'react-router-dom'
+
+import utils from '../../utils/app.utils'
 
 const useStyles = makeStyles(theme => ({
     root: {
@@ -63,6 +65,13 @@ const useStyles = makeStyles(theme => ({
     //     },
     //   },
     },
+
+    ctaSignin: {
+      marginLeft: "auto",
+      color: "#fff",
+      borderColor: "#fff",
+    },
+
   }))
 
 const Header = () => {
@@ -86,7 +95,7 @@ const Header = () => {
                           my-airbnb
                       </Typography>
                     </Link>
-                    <div className={classes.search}>
+                    {/* <div className={classes.search}>
                         <div className={classes.searchIcon}>
                             <SearchOutlined />
                         </div>
@@ -98,7 +107,12 @@ const Header = () => {
                             }}
                             inputProps={{ 'aria-label': 'search' }}
                         />
-                    </div>
+                    </div> */}
+                    {!utils.isAuthenticated() && (
+                        <Button className={classes.ctaSignin} variant="outlined">
+                          <Link to="/signin">Sign in</Link>
+                        </Button>
+                    )}
                 </Toolbar>
             </AppBar>
         </div>

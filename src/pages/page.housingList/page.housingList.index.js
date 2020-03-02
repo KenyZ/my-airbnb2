@@ -20,8 +20,8 @@ import './page.housingList.scss'
 import Carousel from '../../shared/carousel/carousel.index';
 import ButtonAddFavorite from '../../shared/ButtonAddFavorite';
 import { withTheme } from '@material-ui/styles';
-import AppConstants from '../../utils/AppConstants';
-import GlobalUtils from '../../utils/GlobalUtils';
+import params from '../../utils/app.params';
+import utils from '../../utils/app.utils';
 import Pagination from '../../shared/pagination/pagination.index'
 
 
@@ -47,7 +47,7 @@ class PageHousingList  extends React.Component{
 
     // @OPTIMIZATION - should display page [1;infini] instead of [0;infini]
     fetchHousingsList = (page = 0) => {
-        return fetch(AppConstants.API_DOMAIN + "/housing?offset=" + page)
+        return fetch(params.API_DOMAIN + "/housing?offset=" + page)
         .then(res => res.json())
         .then(res => {
 
@@ -134,7 +134,7 @@ class PageHousingList  extends React.Component{
                                             )}
                                         </div>
                                         <div className="page-housingList-list-item-body-info">
-                                            {housings ? <Typography variant="body1">{GlobalUtils.renderHousingTags(housing)}</Typography> : ""}
+                                            {housings ? <Typography variant="body1">{utils.renderHousingTags(housing)}</Typography> : ""}
                                         </div>
                                     </div>
                                 </div>

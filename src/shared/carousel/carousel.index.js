@@ -8,7 +8,7 @@ import Skeleton from '@material-ui/lab/Skeleton'
 import './carousel.scss'
 
 // Utils
-import GlobalUtils from '../../utils/GlobalUtils'
+import utils from '../../utils/app.utils'
 
 class Carousel extends React.Component {
 
@@ -62,7 +62,7 @@ class Carousel extends React.Component {
                     this.props.images.map((image, imageIndex) => (
                         <div 
                             key={"image-" + imageIndex} 
-                            className={GlobalUtils.setClassnames("Carousel-item", {
+                            className={utils.setClassnames("Carousel-item", {
                                 "Carousel-item-current": imageIndex === this.state.carouselCurrent
                             })}
                         >

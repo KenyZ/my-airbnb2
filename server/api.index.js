@@ -10,12 +10,10 @@ const {
     User
 } = sequelize.models
 
-const jwt = require("jsonwebtoken")
 const express = require('express')
 const app = express()
 
 const PORT = 3002
-const TOKEN_ACCESS_EXPIRY = "6h"
 
 /**
  * INIT API
@@ -24,7 +22,8 @@ const TOKEN_ACCESS_EXPIRY = "6h"
 app.use((req, res, next) => {
     res.set({
         "Access-Control-Allow-Origin": "http://localhost:3000",
-        "Access-Control-Allow-Headers": "Content-Type"
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Allow-Methods": "GET, PUT, DELETE, POST, PATCH, OPTIONS"
     })
     next()
 })
@@ -39,100 +38,8 @@ app.get("/", async (req, res) => {
     return res.send({api_running: true})
 })
 
-app.post("/auth/signin", async (req, res) => {
-
-    let results = {
-        error: false,
-        status: 200,
-        data: null,
-    }
-
-    const email = req.body.email || null
-    const password = req.body.password || null
-
-    const loginResults = await User.login(email, password)
-    results = {
-        ...loginResults
-    }  
-
-    if(loginResults.data){
-        const token_access = jwt.sign({
-            id: loginResults.data.id
-        }, process.env.API_SECRET, {
-            expiresIn: TOKEN_ACCESS_EXPIRY
-        })
-
-        results.data = {
-            token_access: token_access
-        }
-    }
-
-    return res.status(results.status).send(results)
-})
-
-app.get("/housing", async (req, res) => {
-
-    // query
-    const offset = (req.query.offset && Number(req.query.offset)) || undefined
-
-    //response
-    const response = await Housing.getAll(5, offset)
-
-    return res.status(response.status).send(response)
-})
-
-app.get("/housing/:id", async (req, res) => {
-
-    // params
-    const housingId = (req.params.id && Number(req.params.id)) || null
-
-    //response
-    const response = await Housing.getById(housingId)
-
-    return res.status(response.status).send(response)
-})
-
-app.get("/housing/:id/review", async (req, res) => {
-
-    // params
-    const housingId = (req.params.id && Number(req.params.id)) || null
-
-    // query
-    const offset = (req.query.offset && Number(req.query.offset)) || undefined
-
-    //response
-    const response = await Housing.getReviews(housingId, 5, offset)
-
-    return res.status(response.status).send(response)
-})
-
-app.get("/housing/:id/booking", async (req, res) => {
-
-    // params
-    const housingId = (req.params.id && Number(req.params.id)) || null
-
-    // query
-    const month = req.query.month || undefined
-    const year = (req.query.year && Number(req.query.year)) || undefined
-
-    //response
-    const response = await Housing.getBookings(housingId, month, year)
-
-    return res.status(response.status).send(response)
-})
-
-
-// app.patch("/housing/:id/favorite", async (req, res) => {
-
-//     // params
-//     const housingId = (req.params.id && Number(req.params.id)) || null
-
-//     //response
-//     const response = await Housing.getBookings(housingId, month, year)
-
-//     return res.status(response.status).send(response)
-// })
-
+const routeHousing = require("./routes/route.housing")(app, sequelize)
+const routeAuth = require("./routes/route.auth")(app, sequelize)
 
 app.listen(PORT, () => console.log(`API launched on PORT=${PORT}`))
 

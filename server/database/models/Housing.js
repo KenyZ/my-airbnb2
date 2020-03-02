@@ -45,11 +45,46 @@ module.exports = (sequelize, DataTypes) => {
     })
 
 
-    // Methods
+    /**
+     * METHODS
+     */
+    
 
     const HousingReview = sequelize.import("./HousingReview.js")
+    const Booking = sequelize.import("./Booking.js")
     const Op = require('sequelize').Op
     const moment = require('moment')
+
+
+    Housing.createBooking = async (guestId, housingId, from, to) => {
+        let response = {
+            error: false,
+            status: 200,
+            data: null,
+        }
+
+
+        try {
+            
+            const booking = await Booking.create({
+                checkin: new Date(from),
+                checkout: new Date(to),
+                guest_id: guestId,
+                housing_id: housingId,
+            })
+    
+            response.data = "created"
+            
+        } catch (CreatingBookingError) {
+            console.log({CreatingBookingError})
+            response.error = {
+                message: "BAD GATEWAY - error on creating booking"
+            }
+            response.status = 502
+        }
+        
+        return response
+    }
 
     Housing.getAll = async (limit = 5, offset = 0) => {
 
@@ -289,7 +324,7 @@ module.exports = (sequelize, DataTypes) => {
 
             const inThisMonth = [
                 moment().month(_month).year(_year).startOf("month"),
-                moment().month(_month).year(_year).endOf('month'),
+                moment().month(_month + 1).year(_year).endOf('month'),
             ]
 
             const bookings = await Housing.findByPk(housingId, {
@@ -319,7 +354,10 @@ module.exports = (sequelize, DataTypes) => {
                 response.data = {
                     month: month,
                     year: year,
-                    list: bookings.get("bookings").map(guest => guest.get("booking"))
+                    list: bookings.get("bookings").map(guest => ({
+                        from: guest.get("booking").get("checkin"),
+                        to: guest.get("booking").get("checkout")
+                    }))
                 }
             } else {
                 response.status = 404

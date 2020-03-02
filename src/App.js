@@ -9,7 +9,6 @@ import Header from './shared/header/header.index';
 import PageHome from './pages/page.home/page.home.index';
 import PageHousingList from './pages/page.housingList/page.housingList.index';
 import PageHousingSingle from './pages/page.housingSingle/page.housingSingle.index';
-import DateRangePicker from './shared/DateRangePicker';
 
 // Assets
 import './styles/styles.scss'

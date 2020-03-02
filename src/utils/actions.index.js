@@ -1,5 +1,5 @@
 
-import Constants from './AppConstants'
+import params from './app.params'
 
 const getResponse = async res => {
     
@@ -21,7 +21,7 @@ const getResponse = async res => {
  * @param {string} formData.password
  */
 export function submitLoginAction(formData){
-    return fetch(Constants.API_DOMAIN + "/auth/signin", {
+    return fetch(params.API_DOMAIN + "/auth/signin", {
         method: "POST",
         headers: {
             "Content-Type": "application/json"

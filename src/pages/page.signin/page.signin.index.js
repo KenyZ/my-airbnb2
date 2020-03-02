@@ -12,6 +12,8 @@ import { withStyles, createStyles } from '@material-ui/styles';
 // Assets
 import './page.signin.scss'
 import Actions from '../../utils/actions.index';
+import params from '../../utils/app.params'
+import { withRouter } from 'react-router-dom';
 
 
 const styles = createStyles(theme => ({
@@ -61,7 +63,11 @@ class PageSignin extends React.Component{
         Actions.submitLoginAction(this.state.formData).then(res => {
             if(res && res.error){
                 this.setState({formError: true, openSnackbarFormError: true})
-            }
+                return
+            }   
+
+            localStorage.setItem(params.ACCESS_TOKEN_LS, res.data.token_access)
+            this.props.history.push("/")
         })
         .catch(res => {
             
@@ -88,7 +94,7 @@ class PageSignin extends React.Component{
                     </div>
                     <div>
                         <TextField
-                            id="user_email"
+                            id="email"
                             placeholder="Email"
                             variant="outlined"
                             fullWidth
@@ -102,7 +108,7 @@ class PageSignin extends React.Component{
                         />
 
                         <TextField
-                            id="user_password"
+                            id="password"
                             placeholder="Password"
                             variant="outlined"
                             fullWidth
@@ -129,4 +135,4 @@ class PageSignin extends React.Component{
     }
 }
 
-export default withStyles(styles)(PageSignin)
+export default withRouter(withStyles(styles)(PageSignin))

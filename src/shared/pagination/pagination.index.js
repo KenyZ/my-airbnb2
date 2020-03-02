@@ -10,7 +10,7 @@ import PropTypes from 'prop-types'
 
 // Assets
 import './pagination.scss'
-import GlobalUtils from '../../utils/GlobalUtils';
+import utils from '../../utils/app.utils';
 
 
 const styles = createStyles(theme => ({
@@ -61,7 +61,7 @@ class Pagination extends React.Component{
                                         }
                                         <button
                                             onClick={() => this.props.onClick(pageIndex)}
-                                            className={GlobalUtils.setClassnames("Pagination-list-btn", {
+                                            className={utils.setClassnames("Pagination-list-btn", {
                                                 "current": pageIndex === this.props.page_current
                                             })}
                                         >

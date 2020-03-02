@@ -21,10 +21,9 @@ import Pagination from '../../shared/pagination/pagination.index'
 import './page.housingSingle.scss'
 
 // Utils
-import GlobalUtils from '../../utils/GlobalUtils';
-import AppConstants from '../../utils/AppConstants';
-import DateRangePicker from '../../shared/DateRangePicker';
-
+import utils from '../../utils/app.utils';
+import params from '../../utils/app.params';
+import BookingPicker from '../../shared/BookingPicker/BookingPicker';
 
 const capitalize = (s) => {
     if (typeof s !== 'string') return ''
@@ -109,22 +108,18 @@ class PageHousingSingle extends React.Component{
     constructor(props){
         super(props)
 
+        this.defaultStateFormData = {
+            from: null,
+            to: null,
+        }
+
         this.state = {
             galleryModalIsOpen: false,
             galleryModalStartAt: 0,
 
             openBookingDialog: false,
 
-            formData: {
-                checkin: null,
-                checkout: null,
-                booking: null
-            },
-
-            checkinCalendarMonth: moment().format("MM"),
-            checkinCalendarYear: moment().format("YYYY"),
-            checkoutCalendarMonth: moment().format("MM"),
-            checkoutCalendarYear: moment().format("YYYY"),
+            formData: {...this.defaultStateFormData},
 
             housing: null,
 
@@ -132,8 +127,6 @@ class PageHousingSingle extends React.Component{
             reviewsPagination: null,
 
             bookings: [],
-
-            foobar: "hello"
         }
 
         this.reviewsSectionRef = React.createRef()
@@ -143,8 +136,7 @@ class PageHousingSingle extends React.Component{
 
         const housingId = this.props.match.params.id
 
-        return fetch(AppConstants.API_DOMAIN + "/housing/" + housingId + "/review?offset=" + page)
-        .then(res => res.json())
+        return utils.request.jsonFetcher("/housing/" + housingId + "/review?offset=" + page)
         .then(res => {
 
             if(res.error){
@@ -162,19 +154,18 @@ class PageHousingSingle extends React.Component{
 
         const housingId = this.props.match.params.id
 
-        return fetch(AppConstants.API_DOMAIN + "/housing/" + housingId + "/booking?month=" + date.format("MMM") + "&year=" + date.format("YYYY"))
-        .then(res => res.json())
+        return utils.request.jsonFetcher("/housing/" + housingId + "/booking?month=" + date.format("MMM") + "&year=" + date.format("YYYY"))
         .then(res => {
 
             if(res.error){
                 return
             }
 
-            const month = res.data.month
-            const year = res.data.year
-
             this.setState({
-                bookings: res.data.list
+                bookings: res.data.list.map(listItem => ({
+                    from: new Date(listItem.from),
+                    to: new Date(listItem.to),
+                }))
             })
 
             return res
@@ -182,15 +173,13 @@ class PageHousingSingle extends React.Component{
     }
 
     componentDidMount(){
-        window.onMonthOrYearChange = this.onMonthOrYearChange
-        window.moment = moment
+
         const housingId = this.props.match.params.id
 
         if(housingId){
 
             // Fetch housing data
-            fetch(AppConstants.API_DOMAIN + "/housing/" + housingId)
-            .then(res => res.json())
+            utils.request.jsonFetcher("/housing/" + housingId)
             .then(res => {
 
                 if(res.error){
@@ -234,23 +223,39 @@ class PageHousingSingle extends React.Component{
         })
     }
 
-    onMonthOrYearChange = async date => {
-        
-        return new Promise((resolve, reject) => {
-
-            this.fetchHousingBookings(date)
-                .then(res => {
-                    console.log("has resolve")
-                    resolve(res)
-                })
-                .catch(err => {
-                    console.log("has failed")
-                    reject(err)
-                })
-                
-            })
+    onDayBookingChange = (newDate) => {
+        this.setState({
+            formData: {
+                ...this.state.formData,
+                ...newDate
+            }
+        })
     }
 
+    onBookingMonthChange = month => {
+        this.fetchHousingBookings(moment(month))
+    }
+
+    onSubmitBooking = () => {
+        
+        const housingId = this.props.match.params.id
+
+        utils.request.bodyFetcher("/housing/" + housingId + "/book", this.state.formData, "PUT")
+        .then(res => {
+
+            if(res.error){
+                console.log(res.error)
+                return
+            } 
+
+            this.setState({
+                formData: this.defaultStateFormData,
+                openBookingDialog: false
+            })
+
+        })
+    }
+    
     render(){
 
         const {classes} = this.props
@@ -276,14 +281,24 @@ class PageHousingSingle extends React.Component{
                             <IconButton onClick={() => this.setState({openBookingDialog: false})} classes={{root: classes.closeModalBtn}}>
                                 <CloseRounded/>
                             </IconButton>
-                            <BookingCtaContainer bookings={this.state.bookings} formData={this.state.formData} handleDateChange={this.handleDateChange} onMonthChange={this.onMonthOrYearChange} housing={housing} classes={classes} isMobile={true}/>
+                            <BookingCtaContainer 
+                                bookings={this.state.bookings} 
+                                from={this.state.formData.from} 
+                                to={this.state.formData.to} 
+                                onDayChange={this.onDayBookingChange}
+                                housing={housing} 
+                                classes={classes} 
+                                isMobile={true}
+                                onMonthChange={this.onBookingMonthChange}
+                                onSubmit={this.onSubmitBooking}
+                            />
                         </DialogContent>
                     </Dialog>
                 </div>
                 {
                     // show carousel on mobile && grid on tablet and more
-                    (this.props.windowWidth > AppConstants.BREAKPOINTS.tablet && (housing && housing.images.length !== 2)) ? (
-                        <div className={GlobalUtils.setClassnames("page-housingSingle-gallery", {
+                    (this.props.windowWidth > params.BREAKPOINTS.tablet && (housing && housing.images.length !== 2)) ? (
+                        <div className={utils.setClassnames("page-housingSingle-gallery", {
                             "page-housingSingle-gallery-1": housing.images.length === 1,
                             "page-housingSingle-gallery-2": housing.images.length === 2,
                             "page-housingSingle-gallery-3": housing.images.length === 3,
@@ -365,7 +380,7 @@ class PageHousingSingle extends React.Component{
                                 <div className="page-housingSingle-body-host-name">
                                     {housing ? (
                                         <Typography variant="subtitle2" component="span">
-                                            {GlobalUtils.renderUserDisplayName(housing.host)}
+                                            {utils.renderUserDisplayName(housing.host)}
                                         </Typography>) : 
                                         (
                                             <Skeleton variant="text" width={45}/>
@@ -380,7 +395,7 @@ class PageHousingSingle extends React.Component{
                             body={
                                 housing ? (
                                     <Typography variant="subtitle2" className="page-housingSingle-body-info-data">
-                                        {GlobalUtils.renderHousingTags(housing)}
+                                        {utils.renderHousingTags(housing)}
                                     </Typography>
                                 ) : (
                                     <Skeleton variant="text"/>
@@ -447,7 +462,7 @@ class PageHousingSingle extends React.Component{
                                                         <div className="page-housingSingle-body-section__reviews-comments-item-top">
                                                             <div className="page-housingSingle-body-section__reviews-comments-item-top-guest">
                                                                 <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__avatar">
-                                                                    <img src={comment.author.avatar} alt={GlobalUtils.renderUserDisplayName(comment.author)}/>
+                                                                    <img src={comment.author.avatar} alt={utils.renderUserDisplayName(comment.author)}/>
                                                                 </div>
                                                                 <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__right">
                                                                     <div className="page-housingSingle-body-section__reviews-comments-item-top-guest__right__name">
@@ -486,9 +501,9 @@ class PageHousingSingle extends React.Component{
                     </div>
                     
 
-                    <div className="page-housingSingle-aside">
+                    {/* <div className="page-housingSingle-aside">
                         <BookingCtaContainer bookings={this.state.bookings} formData={this.state.formData} handleDateChange={this.handleDateChange} onMonthChange={this.onMonthOrYearChange} classes={classes} housing={housing}/>
-                    </div>
+                    </div> */}
                 </div>
                 
             </div>
@@ -496,7 +511,7 @@ class PageHousingSingle extends React.Component{
     }
 }
 
-const BookingCtaContainer = ({housing, bookings, classes, onMonthChange, handleDateChange, formData, isMobile = false}) => (
+const BookingCtaContainer = ({housing, onMonthChange, bookings, classes, onDayChange, from, to, onSubmit, isMobile = false}) => (
     <div className={`page-housingSingle-bookingCta ${isMobile ? "page-housingSingle-bookingCta__mobile" : ""}`}>
             <div className="page-housingSingle-bookingCta-heading">
                 {housing && <Typography variant="h6">Add dates for prices</Typography>}
@@ -505,18 +520,13 @@ const BookingCtaContainer = ({housing, bookings, classes, onMonthChange, handleD
             <div className="hr"/>
             <div className="page-housingSingle-bookingCta-datepickers">
                 {housing ? (
-                    <React.Fragment>                         
-                        <DateRangePicker
-                            checkin={formData.checkin}
-                            checkout={formData.checkout}
-                            handleDateChange={handleDateChange}
-                            onMonthOrYearChange={onMonthChange}
-                            bookings={bookings}
-                            DatePickerProps={{
-
-                            }}
-                        />
-                    </React.Fragment>
+                    <BookingPicker
+                        onDayChange={onDayChange}
+                        from={from}
+                        to={to}
+                        bookings={bookings}
+                        onMonthChange={onMonthChange}
+                    />
                 ) : (
                     <React.Fragment>
                         <Skeleton variant="rect" style={{marginBottom: 15}}/>
@@ -530,6 +540,9 @@ const BookingCtaContainer = ({housing, bookings, classes, onMonthChange, handleD
                 size="large"
                 fullWidth
                 classes={{root: classes.bookingCta__btn}}
+                onClick={onSubmit}
+                // IF some data in formData is undefined THEN disable submit
+                disabled={!from || !to}
             >Book</Button>) : (
                 <Skeleton variant="rect" height={40}/>
             )}

@@ -12,7 +12,8 @@ const PageHome = () => {
         <div className="page page-home">
             <h1>Welcome to my-airbnb</h1>
             <ul>
-                <li><a href="/housings">housings list</a></li>
+                <li><a href="/signin">signin</a></li>
+                <li><a href="/housings">housings</a></li>
             </ul>
         </div>
     )
