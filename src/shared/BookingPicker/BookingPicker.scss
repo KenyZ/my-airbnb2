@@ -2,8 +2,9 @@
 
 .BookingPicker{
 
-    display: flex;
-    justify-content: center;
+    .DayPickerInput{
+        width: 100%
+    }
 
     .DayPicker-Day{
 
@@ -13,9 +14,6 @@
             opacity: .3;
         }
 
-        &--disabled{
-            // pointer-events: none;
-        }
     }
 
     // .Range .DayPicker-Day--selected:not(.DayPicker-Day--start):not(.DayPicker-Day--end):not(.DayPicker-Day--outside) {

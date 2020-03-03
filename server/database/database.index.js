@@ -44,8 +44,8 @@ User.hasMany(Housing, {as: "housings", foreignKey: "owner_id"})
 Housing.belongsTo(User, {as: "host", foreignKey: "owner_id"})
 
 // Guest's housings || Bookings
-Housing.belongsToMany(User, {through: Booking, as: "bookings", foreignKey: "housing_id", otherKey: "guest_id"})
-User.belongsToMany(Housing, {through: Booking, as: "bookings", otherKey: "housing_id", foreignKey: "guest_id"})
+Housing.hasMany(Booking, {as: "bookings", foreignKey: "housing_id"})
+User.hasMany(Booking, {as: "bookings", foreignKey: "guest_id"})
 
 // User's favorite housing
 // User.hasMany(Housing, {as: "favorite_housings", foreignKey: "user_id"})

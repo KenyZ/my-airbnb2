@@ -44,11 +44,12 @@ module.exports = (app, sequelize) => {
         const housingId = (req.params.id && Number(req.params.id)) || null
     
         // query
-        const month = req.query.month || undefined
+        const month1 = req.query.from || undefined
+        const month2 = req.query.to || undefined
         const year = (req.query.year && Number(req.query.year)) || undefined
     
         //response
-        const response = await sequelize.models.Housing.getBookings(housingId, month, year)
+        const response = await sequelize.models.Housing.getBookings(housingId, month1, month2, year)
     
         return res.status(response.status).send(response)
     })

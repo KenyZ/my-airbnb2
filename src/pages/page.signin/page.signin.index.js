@@ -67,7 +67,20 @@ class PageSignin extends React.Component{
             }   
 
             localStorage.setItem(params.ACCESS_TOKEN_LS, res.data.token_access)
-            this.props.history.push("/")
+
+            // if we must go back to previous page
+            if(this.props.location.state && this.props.location.state.remember){
+
+                // previous page
+                const remember = this.props.location.state.remember
+                const referer = remember.referer
+
+                // go back to previous page with memorized state
+                this.props.history.push(referer, {remember})
+            } else {
+                this.props.history.push("/")
+            }
+
         })
         .catch(res => {
             

@@ -1,3 +1,13 @@
+const moment = require("moment")
+
+const Format = {
+    bookingsAttributes : ["id", "checkin", "checkout"],
+    bookingsFormat: bookingsItem => ({
+        id: bookingsItem.get("id"),
+        from: bookingsItem.get("checkin"),
+        to: bookingsItem.get("checkout")
+    })
+}
 
 module.exports = (sequelize, DataTypes) => {
 
@@ -73,10 +83,11 @@ module.exports = (sequelize, DataTypes) => {
                 housing_id: housingId,
             })
     
-            response.data = "created"
+            response.data = Format.bookingsFormat(booking)
             
         } catch (CreatingBookingError) {
             console.log({CreatingBookingError})
+
             response.error = {
                 message: "BAD GATEWAY - error on creating booking"
             }
@@ -308,7 +319,7 @@ module.exports = (sequelize, DataTypes) => {
      * @param {string} month - range is [0, 11]
      * @param {string} year - i.e 2020
      */
-    Housing.getBookings = async (housingId = null, month, year) => {
+    Housing.getBookings = async (housingId = null, month1, month2, year) => {
 
         const response = {
             error: false,
@@ -317,14 +328,13 @@ module.exports = (sequelize, DataTypes) => {
         }
 
         // OPTI - useless?
-        let _month = month || undefined
         let _year = (year && Number(year)) || undefined
 
-        if(month && year){
+        if(month1 && month2 && year){
 
             const inThisMonth = [
-                moment().month(_month).year(_year).startOf("month"),
-                moment().month(_month + 1).year(_year).endOf('month'),
+                moment().month(month1).year(_year).startOf("month"),
+                moment().month(month2).year(_year).endOf('month'),
             ]
 
             const bookings = await Housing.findByPk(housingId, {
@@ -332,18 +342,15 @@ module.exports = (sequelize, DataTypes) => {
                 include: [
                     {
                         association: "bookings",
-                        attributes: ["id"],
-                        through: {
-                            attributes: ["checkin", "checkout"],
-                            where: {
-                                [Op.or]: {
-                                    checkin: {
-                                        [Op.between]: inThisMonth
-                                    },
-                                    checkout: {
-                                        [Op.between]: inThisMonth
-                                    },
-                                }
+                        attributes: Format.bookingsAttributes,
+                        where: {
+                            [Op.or]: {
+                                checkin: {
+                                    [Op.between]: inThisMonth
+                                },
+                                checkout: {
+                                    [Op.between]: inThisMonth
+                                },
                             }
                         }
                     }
@@ -352,12 +359,7 @@ module.exports = (sequelize, DataTypes) => {
     
             if(bookings){
                 response.data = {
-                    month: month,
-                    year: year,
-                    list: bookings.get("bookings").map(guest => ({
-                        from: guest.get("booking").get("checkin"),
-                        to: guest.get("booking").get("checkout")
-                    }))
+                    list: bookings.get("bookings").map(Format.bookingsFormat)
                 }
             } else {
                 response.status = 404

@@ -2,10 +2,13 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { withStyles, createStyles} from '@material-ui/styles'
 import DayPicker, {DateUtils} from 'react-day-picker'
-import 'react-day-picker/lib/style.css'
+
 
 // Assets
+import 'react-day-picker/lib/style.css'
 import "./BookingPicker.scss"
+
+
 const styles = createStyles(theme => ({
 
 }))
@@ -79,8 +82,8 @@ class BookingPicker extends React.Component{
 
     render(){
 
-        const { from } = this.props
-        const enteredTo = this.state.enteredTo
+        const {from, to} = this.props
+        const enteredTo = this.state.enteredTo || to /** allow to pre-set props */
         const modifiers = { start: from, end: enteredTo, alreadyBooked: this.props.bookings}
         const disabledDays = [
             ...this.props.bookings,

@@ -1,10 +1,20 @@
 // Modules
 import React from 'react'
-import { StarRounded } from '@material-ui/icons'
 import {
     withRouter
 } from 'react-router-dom'
-import { Button, Dialog, DialogContent, IconButton, Typography, CircularProgress } from '@material-ui/core';
+
+import { StarRounded } from '@material-ui/icons'
+import { 
+    Button, 
+    Dialog, 
+    DialogContent, 
+    IconButton, 
+    Typography, 
+    CircularProgress,
+    Snackbar,
+    SnackbarContent,
+} from '@material-ui/core';
 import {CloseRounded} from '@material-ui/icons'
 import { withStyles, createStyles, withTheme } from '@material-ui/styles';
 import Skeleton from '@material-ui/lab/Skeleton';
@@ -15,6 +25,7 @@ import widthWindowWidth from '../../shared/widthWindowWidth';
 import GalleryModal from '../../shared/galleryModal/galleryModal.index';
 import Carousel from '../../shared/carousel/carousel.index';
 import Pagination from '../../shared/pagination/pagination.index'
+import BookingPicker from '../../shared/BookingPicker/BookingPicker';
 
 
 // Assets
@@ -23,7 +34,6 @@ import './page.housingSingle.scss'
 // Utils
 import utils from '../../utils/app.utils';
 import params from '../../utils/app.params';
-import BookingPicker from '../../shared/BookingPicker/BookingPicker';
 
 const capitalize = (s) => {
     if (typeof s !== 'string') return ''
@@ -101,7 +111,28 @@ const styles = theme => createStyles({
         borderRadius: 0
     },
 
+    "snackbar-error": {
+        backgroundColor: theme.palette.error.main,
+    },
+
+    "snackbar-success": {
+        backgroundColor: theme.palette.success.main,
+    },
+
 })
+
+
+const SNACKBAR_WORDING = {
+    "error": "Something went wrong !",
+    "success": "Well done."
+}
+
+const Format = {
+    formatDate: date => ({
+        from: new Date(date.from),
+        to: new Date(date.to),
+    })
+}
 
 class PageHousingSingle extends React.Component{
 
@@ -127,6 +158,9 @@ class PageHousingSingle extends React.Component{
             reviewsPagination: null,
 
             bookings: [],
+
+            openSnackbar: false,
+            snackbarType: null
         }
 
         this.reviewsSectionRef = React.createRef()
@@ -154,7 +188,7 @@ class PageHousingSingle extends React.Component{
 
         const housingId = this.props.match.params.id
 
-        return utils.request.jsonFetcher("/housing/" + housingId + "/booking?month=" + date.format("MMM") + "&year=" + date.format("YYYY"))
+        return utils.request.jsonFetcher("/housing/" + housingId + "/booking?from=" + date.format("MMM") + "&to=" + date.add(1, "month").format("MMM") + "&year=" + date.format("YYYY"))
         .then(res => {
 
             if(res.error){
@@ -162,10 +196,7 @@ class PageHousingSingle extends React.Component{
             }
 
             this.setState({
-                bookings: res.data.list.map(listItem => ({
-                    from: new Date(listItem.from),
-                    to: new Date(listItem.to),
-                }))
+                bookings: res.data.list.map(Format.formatDate)
             })
 
             return res
@@ -174,6 +205,12 @@ class PageHousingSingle extends React.Component{
 
     componentDidMount(){
 
+        if(this.props.location.state && this.props.location.state.remember){
+
+            const remember = this.props.location.state.remember
+            this.setState(remember.state)
+        }
+        
         const housingId = this.props.match.params.id
 
         if(housingId){
@@ -236,7 +273,9 @@ class PageHousingSingle extends React.Component{
         this.fetchHousingBookings(moment(month))
     }
 
-    onSubmitBooking = () => {
+    onSubmitBooking = event => {
+
+        event.preventDefault()
         
         const housingId = this.props.match.params.id
 
@@ -245,14 +284,43 @@ class PageHousingSingle extends React.Component{
 
             if(res.error){
                 console.log(res.error)
-                return
-            } 
 
+                // must be auth
+                if(res.status === 401){
+                    this.props.history.push("/signin", {
+                        remember: {
+                            referer: this.props.location.pathname,
+                            state: {
+                                formData: this.state.formData,
+                                openBookingDialog: this.state.openBookingDialog
+                            }
+                        }
+                    })
+                } else {
+                    this.openSnackbar("error")
+                } 
+
+                return false
+            } 
+            console.log(res.data)
             this.setState({
                 formData: this.defaultStateFormData,
-                openBookingDialog: false
+                openBookingDialog: false,
+                bookings: [
+                    ...this.state.bookings,
+                    Format.formatDate(res.data)
+                ]
             })
 
+            this.openSnackbar("success")
+
+        })
+    }
+
+    openSnackbar = type => {
+        this.setState({
+            openSnackbar: true,
+            snackbarType: type
         })
     }
     
@@ -265,6 +333,17 @@ class PageHousingSingle extends React.Component{
 
         return (
             <div className="page page-housingSingle">
+                <Snackbar
+                    open={this.state.openSnackbar}
+                    onClose={() => this.setState({openSnackbar: null})}
+                    autoHideDuration={2000}
+                >
+                    <SnackbarContent
+                        classes={{root: this.props.classes["snackbar-" + this.state.snackbarType]}}
+                        message={<span id="snackbar-message">{SNACKBAR_WORDING[this.state.snackbarType]}</span>}
+                    />
+                </Snackbar>
+
                 <div className="page-housingSingle-mobileBookingCta">
                     <Button
                         variant="contained"
@@ -501,9 +580,18 @@ class PageHousingSingle extends React.Component{
                     </div>
                     
 
-                    {/* <div className="page-housingSingle-aside">
-                        <BookingCtaContainer bookings={this.state.bookings} formData={this.state.formData} handleDateChange={this.handleDateChange} onMonthChange={this.onMonthOrYearChange} classes={classes} housing={housing}/>
-                    </div> */}
+                    <div className="page-housingSingle-aside">
+                        <BookingCtaContainer 
+                            bookings={this.state.bookings} 
+                            from={this.state.formData.from} 
+                            to={this.state.formData.to} 
+                            onDayChange={this.onDayBookingChange}
+                            housing={housing} 
+                            classes={classes} 
+                            onMonthChange={this.onBookingMonthChange}
+                            onSubmit={this.onSubmitBooking}
+                        />
+                    </div>
                 </div>
                 
             </div>
@@ -514,7 +602,7 @@ class PageHousingSingle extends React.Component{
 const BookingCtaContainer = ({housing, onMonthChange, bookings, classes, onDayChange, from, to, onSubmit, isMobile = false}) => (
     <div className={`page-housingSingle-bookingCta ${isMobile ? "page-housingSingle-bookingCta__mobile" : ""}`}>
             <div className="page-housingSingle-bookingCta-heading">
-                {housing && <Typography variant="h6">Add dates for prices</Typography>}
+                {housing && <Typography variant="h6">Booking</Typography>}
                 {!housing && <Skeleton variant="text"/>}
             </div>
             <div className="hr"/>
