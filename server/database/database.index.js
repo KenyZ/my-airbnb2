@@ -25,6 +25,7 @@ const User = sequelize.import('./models/User.js')
       Housing = sequelize.import('./models/Housing.js'),
       HousingImage = sequelize.import('./models/HousingImage.js'),
       HousingReview = sequelize.import('./models/HousingReview.js'),
+      HousingFavorite = sequelize.import('./models/HousingFavorite.js'),
       Booking = sequelize.import('./models/Booking.js'),
 
 // Housing's images
@@ -48,8 +49,8 @@ Housing.hasMany(Booking, {as: "bookings", foreignKey: "housing_id"})
 User.hasMany(Booking, {as: "bookings", foreignKey: "guest_id"})
 
 // User's favorite housing
-// User.hasMany(Housing, {as: "favorite_housings", foreignKey: "user_id"})
-// Housing.belongsTo(User, {as: "user_interested", foreignKey: "user_id"})
+User.hasMany(HousingFavorite, {as: "favorite_housing", foreignKey: "user_id"})
+Housing.hasMany(HousingFavorite, {as: "interested_users", foreignKey: "housing_id"})
 
 
 sequelize.models = {
@@ -57,6 +58,7 @@ sequelize.models = {
   Housing,
   HousingImage,
   HousingReview,
+  HousingFavorite,
   Booking,
 }
 

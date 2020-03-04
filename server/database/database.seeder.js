@@ -76,6 +76,9 @@ async function generateDumpData(){
             description: faker.lorem.paragraph(4),
             location_country: location_country,
             owner_id: host.get('id'),
+            interested_users: Utils.randomSubArray(users, faker.random.number(users.length - 1)).map(usersItem => ({
+                user_id: usersItem.id
+            })),
             images: Utils.loop(images, img => {
 
                 housingsImageCount++;
@@ -91,6 +94,9 @@ async function generateDumpData(){
                     model: sequelize.models.HousingImage,
                     as: "images"
                 },
+                {
+                    association: "interested_users",
+                }
             ]
         })
 

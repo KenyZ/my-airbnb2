@@ -1,6 +1,30 @@
 const jwt = require("jsonwebtoken")
 
 const tokenUtils = {
+
+    extractToken: async (req, res, next) => {
+
+        // get header
+        let token = req.header("Authorization")
+        // extract text value
+        token = token && token.replace("Bearer ", "")
+
+
+        if(!token){
+            return next()
+        } else {
+            // keep extracting
+            const verifyTokenResults = tokenUtils.verifiy(token, process.env.API_SECRET)
+
+            if(verifyTokenResults.error){
+                return next()
+            } else {
+                req.token = verifyTokenResults.data
+                return next()
+            }
+        }
+    },
+
     verifiy: (token, secret) => {
 
         let results = {
@@ -30,80 +54,23 @@ const tokenUtils = {
 
 const auth = {
 
-    checkToken: async (req, res, next) => {
+    needAuthentication: async (req, res, next) => {
 
-        let results = {
-            error: false,
-            status: 200,
-            data: null,
-        }
-
-        // get header
-        let token = req.header("Authorization")
-        // extract text value
-        token = token && token.replace("Bearer ", "")
-
-        let verifiedToken = null
-        
-        if(token){
-
-            const verifyTokenResults = tokenUtils.verifiy(token, process.env.API_SECRET)
-            
-            if(verifyTokenResults.data){
-                verifiedToken = verifyTokenResults.data
-            } else {
-                results = verifyTokenResults
-            }
-            
-        } else {
-            results.error = {
-                code: 400,
-                message: "BAD REQUEST - token not found in header"
-            }
-            results.status = 400
-        }
-
-        if(results.error){
-            return res.status(results.status).json(results)
-        } else {
-            req.token = verifiedToken
+        if(req.token && req.token.id){
             return next()
+        } else {
+            return res.json({
+                error: {
+                    code: 401,
+                    message: "Unauthorized - token is invalid or has expired"
+                }
+            })
         }
-    },
-
-    // checkUserRole: (roles = []) => async (req, res, next) => {
-
-    //     let results = {
-    //         error: false,
-    //         status: 200,
-    //         data: null,
-    //     }
-
-    //     if(req.token){
-    //         if(!roles.includes(req.token.role)){
-    //             results.error = {
-    //                 code: 403,
-    //                 message: "FORBIDDEN - Access denied for role {" + req.token.role + "}"
-    //             }
-    //             results.status = 403
-    //         }
-    //     } else {
-    //         results.error = {
-    //             code: 401,
-    //             message: "Unauthorized - token is invalid or has expired"
-    //         }
-    //         results.status = 401
-    //     }
-
-    //     if(results.error){
-    //         return res.status(results.status).json(results)
-    //     } else {
-    //         return next()
-    //     }
-    // }
-
+    }
+        
 }
 
 module.exports = {
-    auth
+    auth,
+    token: tokenUtils
 }

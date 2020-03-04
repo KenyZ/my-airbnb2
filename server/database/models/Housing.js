@@ -61,6 +61,7 @@ module.exports = (sequelize, DataTypes) => {
     
 
     const HousingReview = sequelize.import("./HousingReview.js")
+    const HousingFavorite = sequelize.import("./HousingFavorite.js")
     const Booking = sequelize.import("./Booking.js")
     const Op = require('sequelize').Op
     const moment = require('moment')
@@ -97,7 +98,7 @@ module.exports = (sequelize, DataTypes) => {
         return response
     }
 
-    Housing.getAll = async (limit = 5, offset = 0) => {
+    Housing.getAll = async (limit = 5, offset = 0, user_id = null) => {
 
         const response = {
             error: false,
@@ -105,22 +106,37 @@ module.exports = (sequelize, DataTypes) => {
             data: null,
         }
 
+        let housingsInclude = [
+            {
+                association: "images",
+                attributes: ["id", "url"]
+            },
+            {// @OPTIMIZATION - should do like .getById()
+                association: "reviews",
+                attributes: ["score_checkin", "score_accuracy", "score_location", "score_communication", "score_cleanliness", "score_value",]
+            },
+        ]
+
+        // if user is authenticated we can fetch is favorite hosuings
+        if(user_id){
+            housingsInclude.push({
+                association: "interested_users",
+                attributes: ["user_id"],
+                required: false,
+                where: {
+                    user_id: user_id
+                }
+            })
+        }
+
         const housings = await Housing.findAll({
             limit: limit,
             offset: offset * limit,
             // @NEXT - order by ? created_at ? / most available date ?
             attributes: {exclude: ["owner_id", "description"]},
-            include: [
-                {
-                    association: "images",
-                    attributes: ["id", "url"]
-                },
-                {// @OPTIMIZATION - should do like .getById()
-                    association: "reviews",
-                    attributes: ["score_checkin", "score_accuracy", "score_location", "score_communication", "score_cleanliness", "score_value",]
-                }
-            ]
+            include: housingsInclude
         })
+
 
         const housing_count = await Housing.count()            
         
@@ -162,7 +178,9 @@ module.exports = (sequelize, DataTypes) => {
                         average: score_average,
                         count: housingsItem.reviews.length
                     },
-                    images: housingsItem.images
+                    images: housingsItem.images,
+                    // set isFavorite = true or do not print anything
+                    is_favorite: (housingsItem.interested_users && housingsItem.interested_users[0]) ? true : undefined
                 }
             })
         }
@@ -372,6 +390,53 @@ module.exports = (sequelize, DataTypes) => {
 
 
         return response
+    }
+
+    Housing.toggleFavorite = async (housingId, userId) => {
+
+        let response = {
+            error: false,
+            status: 200,
+            data: null,
+        }
+
+        try {
+            
+            const existingFavoriteHousing = await HousingFavorite.findOne({
+                where: {
+                    housing_id: housingId,
+                    user_id: userId
+                }
+            })
+
+            if(existingFavoriteHousing){
+                await existingFavoriteHousing.destroy()
+                response.data = {
+                    housing_id: housingId,
+                    is_favorite: false
+                }
+            } else {
+                const createdFavoriteHousing = await HousingFavorite.create({
+                    housing_id: housingId,
+                    user_id: userId
+                })
+                response.data = {
+                    housing_id: housingId,
+                    is_favorite: true
+                }
+            }
+
+        } catch (ToggleFavoriteError) {
+            console.log({ToggleFavoriteError})
+
+            response.error = {
+                message: "BAD GATEWAY - error on toggling favorite"
+            }
+            response.status = 502
+        }
+
+        return response
+
     }
 
     return Housing

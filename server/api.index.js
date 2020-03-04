@@ -1,5 +1,8 @@
 console.clear()
 
+// Utils
+const utils = require("./api.utils")
+
 require('dotenv').config()
 
 /** DATABASE */
@@ -29,6 +32,8 @@ app.use((req, res, next) => {
 })
 
 app.use(express.json())
+
+app.use(utils.token.extractToken)
 
 /**
  * ROUTES

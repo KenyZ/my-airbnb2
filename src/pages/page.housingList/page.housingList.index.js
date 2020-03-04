@@ -18,7 +18,7 @@ import "slick-carousel/slick/slick.css";
 import "slick-carousel/slick/slick-theme.css";
 import './page.housingList.scss'
 import Carousel from '../../shared/carousel/carousel.index';
-import ButtonAddFavorite from '../../shared/ButtonAddFavorite';
+import ButtonFavorite from '../../shared/ButtonFavorite';
 import { withTheme } from '@material-ui/styles';
 import params from '../../utils/app.params';
 import utils from '../../utils/app.utils';
@@ -47,8 +47,7 @@ class PageHousingList  extends React.Component{
 
     // @OPTIMIZATION - should display page [1;infini] instead of [0;infini]
     fetchHousingsList = (page = 0) => {
-        return fetch(params.API_DOMAIN + "/housing?offset=" + page)
-        .then(res => res.json())
+        return utils.request.jsonFetcher("/housing?offset=" + page)
         .then(res => {
 
             if(res.error){
@@ -75,7 +74,6 @@ class PageHousingList  extends React.Component{
             }
 
         }
-
     }
 
     componentDidMount(){
@@ -92,6 +90,23 @@ class PageHousingList  extends React.Component{
             path: this.props.location.pathname,
             search: "?page=" + page 
         })
+    }
+
+    toggleFavoriteHousing = housingId => {
+        utils.request.jsonFetcher("/housing/" + housingId + "/favorite", {method: "PATCH"})
+            .then(res => {
+
+                if(res.error){
+                    //
+                    return
+                } else {
+                    this.setState({housings: this.state.housings.map(housingsItem => ({
+                        ...housingsItem,
+                        // IF we match housing we set new is_favorite
+                        is_favorite: housingsItem.id === res.data.housing_id ? res.data.is_favorite : housingsItem.is_favorite
+                    }))})
+                }
+            })
     }
     
     render(){
@@ -111,7 +126,12 @@ class PageHousingList  extends React.Component{
                                 <div key={"housing-" + housing.id} className="page-housingList-list-item">
                                     {housings && <Link to={this.props.location.pathname + "/" + housing.id} className="block-link"></Link>}
                                     <div className="page-housingList-list-item-images">
-                                        {housings && <ButtonAddFavorite/>}
+                                        {housings && (
+                                            <ButtonFavorite 
+                                                handleToggle={() => this.toggleFavoriteHousing(housing.id)} 
+                                                isFavorite={housing.is_favorite}
+                                            />
+                                        )}
                                         <Carousel images={housings && housing.images.map(img => img.url)}/>
                                     </div>
     

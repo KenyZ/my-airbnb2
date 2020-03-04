@@ -6,7 +6,7 @@ import {
     IconButton,
     Button,
 } from '@material-ui/core'
-import { Menu} from '@material-ui/icons'
+import { Menu, FavoriteBorder } from '@material-ui/icons'
 import { makeStyles, fade } from '@material-ui/core/styles'
 import {Link} from 'react-router-dom'
 
@@ -67,14 +67,18 @@ const useStyles = makeStyles(theme => ({
     },
 
     ctaSignin: {
-      marginLeft: "auto",
       color: "#fff",
       borderColor: "#fff",
     },
 
+    favoriteListBtn: {
+      color: "#fff",
+      marginLeft: "auto",
+    }
+
   }))
 
-const Header = () => {
+const Header = (props) => {
 
     const classes = useStyles()
 
@@ -113,6 +117,9 @@ const Header = () => {
                           <Link to="/signin">Sign in</Link>
                         </Button>
                     )}
+                    <IconButton className={classes.favoriteListBtn}>
+                      <FavoriteBorder/>
+                    </IconButton>
                 </Toolbar>
             </AppBar>
         </div>

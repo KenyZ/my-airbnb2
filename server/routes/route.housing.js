@@ -7,8 +7,11 @@ module.exports = (app, sequelize) => {
         // query
         const offset = (req.query.offset && Number(req.query.offset)) || undefined
     
+        // opt - user_id
+        const user_id = req.token && req.token.id
+
         //response
-        const response = await Housing.getAll(5, offset)
+        const response = await Housing.getAll(5, offset, user_id)
     
         return res.status(response.status).send(response)
     })
@@ -54,7 +57,7 @@ module.exports = (app, sequelize) => {
         return res.status(response.status).send(response)
     })
 
-    app.put("/housing/:id/book", utils.auth.checkToken, async (req, res) => {
+    app.put("/housing/:id/book", utils.auth.needAuthentication, async (req, res) => {
 
         // params
         const housingId = req.params.id && Number(req.params.id)
@@ -68,6 +71,18 @@ module.exports = (app, sequelize) => {
         
         return res.status(response.status).json(response)
 
+    })
+
+    app.patch("/housing/:id/favorite", utils.auth.needAuthentication, async (req, res) => {
+
+        // params
+        const housingId = req.params.id && Number(req.params.id)
+
+        const userId = req.token.id
+        
+        const response = await sequelize.models.Housing.toggleFavorite(housingId, userId)
+
+        return res.status(response.status).json(response)
     })
 
     return app
