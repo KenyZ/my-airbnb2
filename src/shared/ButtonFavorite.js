@@ -1,4 +1,4 @@
-import React, {useState} from 'react'
+import React from 'react'
 import Proptypes from 'prop-types'
 import {IconButton, createStyles, withStyles} from '@material-ui/core'
 import {Favorite, FavoriteBorder} from '@material-ui/icons'

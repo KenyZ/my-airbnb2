@@ -32,7 +32,26 @@ export function submitLoginAction(formData){
     .then(getResponse)
 }
 
+/**
+ * 
+ * @param {Number} page
+ */
+export function getHousingList(page = 0, onlyFavorites = false){
+
+    let requestUrl = "/housing?offset=" + page
+
+    // filter by favorite of user_id
+    if(onlyFavorites){
+        requestUrl = requestUrl + "&only_favorites=1"
+    }
+
+    console.log(requestUrl)
+    return utils.request.jsonFetcher(requestUrl)
+
+}
+
 
 export default {
-    submitLoginAction
+    submitLoginAction,
+    getHousingList
 }

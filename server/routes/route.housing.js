@@ -6,12 +6,15 @@ module.exports = (app, sequelize) => {
 
         // query
         const offset = (req.query.offset && Number(req.query.offset)) || undefined
+
+        // if user is not authenticated prevent this filter
+        const only_favorites = (req.token && req.query.only_favorites) ? true : false
     
         // opt - user_id
         const user_id = req.token && req.token.id
 
         //response
-        const response = await Housing.getAll(5, offset, user_id)
+        const response = await Housing.getAll(5, offset, user_id, only_favorites)
     
         return res.status(response.status).send(response)
     })

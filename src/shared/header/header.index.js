@@ -72,9 +72,12 @@ const useStyles = makeStyles(theme => ({
     },
 
     favoriteListBtn: {
-      color: "#fff",
       marginLeft: "auto",
-    }
+    },
+
+    favoriteListBtnIcon: {
+      color: "#fff",
+    },
 
   }))
 
@@ -117,9 +120,17 @@ const Header = (props) => {
                           <Link to="/signin">Sign in</Link>
                         </Button>
                     )}
-                    <IconButton className={classes.favoriteListBtn}>
-                      <FavoriteBorder/>
-                    </IconButton>
+                    {utils.isAuthenticated() && (
+                      <Link
+                        to="/favorites"
+                        className={classes.favoriteListBtn}
+                      >
+                        <IconButton className={classes.favoriteListBtnIcon}>
+                          <FavoriteBorder/>
+                        </IconButton>
+                      </Link>
+                      )
+                    }
                 </Toolbar>
             </AppBar>
         </div>

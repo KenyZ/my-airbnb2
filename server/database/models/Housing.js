@@ -98,7 +98,7 @@ module.exports = (sequelize, DataTypes) => {
         return response
     }
 
-    Housing.getAll = async (limit = 5, offset = 0, user_id = null) => {
+    Housing.getAll = async (limit = 5, offset = 0, user_id = null, onlyFavorites = false) => {
 
         const response = {
             error: false,
@@ -122,7 +122,7 @@ module.exports = (sequelize, DataTypes) => {
             housingsInclude.push({
                 association: "interested_users",
                 attributes: ["user_id"],
-                required: false,
+                required: onlyFavorites,
                 where: {
                     user_id: user_id
                 }
@@ -138,7 +138,17 @@ module.exports = (sequelize, DataTypes) => {
         })
 
 
-        const housing_count = await Housing.count()            
+        const housing_count = await Housing.count(onlyFavorites && {
+            include: [
+                {
+                    association: "interested_users",
+                    required: onlyFavorites,
+                    where: {
+                        user_id: user_id
+                    }
+                }
+            ]
+        })            
         
         response.data = {
             pagination: {

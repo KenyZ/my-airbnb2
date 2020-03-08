@@ -1,28 +1,19 @@
 // Modules
 import React from 'react'
-import {
-    StarRounded,
-} from '@material-ui/icons'
 import {Typography} from '@material-ui/core'
-import Skeleton from '@material-ui/lab/Skeleton'
 import {
-    Link,
     withRouter
 } from 'react-router-dom'
+import { withTheme } from '@material-ui/styles';
 
 // Components
-
+import Pagination from '../../shared/pagination/pagination.index'
+import HousingListItem from '../../shared/HousingListItem/HousingListItem'
+import utils from '../../utils/app.utils';
+import Actions from '../../utils/actions.index'
 
 // Assets
-import "slick-carousel/slick/slick.css";
-import "slick-carousel/slick/slick-theme.css";
 import './page.housingList.scss'
-import Carousel from '../../shared/carousel/carousel.index';
-import ButtonFavorite from '../../shared/ButtonFavorite';
-import { withTheme } from '@material-ui/styles';
-import params from '../../utils/app.params';
-import utils from '../../utils/app.utils';
-import Pagination from '../../shared/pagination/pagination.index'
 
 
 const placeholderList = [{id: 0},{id: 1},{id: 2}]
@@ -47,7 +38,7 @@ class PageHousingList  extends React.Component{
 
     // @OPTIMIZATION - should display page [1;infini] instead of [0;infini]
     fetchHousingsList = (page = 0) => {
-        return utils.request.jsonFetcher("/housing?offset=" + page)
+        return Actions.getHousingList(page)
         .then(res => {
 
             if(res.error){
@@ -62,7 +53,6 @@ class PageHousingList  extends React.Component{
     }
 
     componentDidUpdate(prevProps){
-
 
         if(prevProps.location.search !== this.props.location.search){ // changing pagination
             const nextPage = this.getCurrentPagination()
@@ -121,43 +111,14 @@ class PageHousingList  extends React.Component{
                 <div className="page-housingList-list">
                     {
                         (housings ? housings : placeholderList).map((housing, housingIndex) => {
-
                             return (
-                                <div key={"housing-" + housing.id} className="page-housingList-list-item">
-                                    {housings && <Link to={this.props.location.pathname + "/" + housing.id} className="block-link"></Link>}
-                                    <div className="page-housingList-list-item-images">
-                                        {housings && (
-                                            <ButtonFavorite 
-                                                handleToggle={() => this.toggleFavoriteHousing(housing.id)} 
-                                                isFavorite={housing.is_favorite}
-                                            />
-                                        )}
-                                        <Carousel images={housings && housing.images.map(img => img.url)}/>
-                                    </div>
-    
-                                    <div className="page-housingList-list-item-body">
-                                        <div className="page-housingList-list-item-body-header">
-                                            {housings ? <Typography component="span" variant="overline">Entire apartment</Typography> : ""}
-                                            {housings ? (
-                                                <div className="page-housingList-list-item-body-header-rating">
-                                                    <StarRounded style={{color: this.props.theme.palette.secondary.main, fontSize: "14px"}}/>
-                                                    <Typography variant="subtitle2" component="span">{housing.rating.average} ({housing.rating.count})</Typography>
-                                                </div>
-                                            ) : ""}
-                                        </div>
-                                        <div className="page-housingList-list-item-body-title">
-                                            {housings ? <Typography variant="h5">{housing.title}</Typography> : (
-                                                <React.Fragment>
-                                                    <Skeleton variant="text"/>
-                                                    <Skeleton variant="text"/>
-                                                </React.Fragment>
-                                            )}
-                                        </div>
-                                        <div className="page-housingList-list-item-body-info">
-                                            {housings ? <Typography variant="body1">{utils.renderHousingTags(housing)}</Typography> : ""}
-                                        </div>
-                                    </div>
-                                </div>
+                                <HousingListItem
+                                    key={"housing-" + housing.id}
+                                    housing={housing}
+                                    // if not loaded component can show placeholder
+                                    isLoaded={!!housings}
+                                    handleToggle={this.toggleFavoriteHousing}
+                                />
                             )
                         })
                     }
